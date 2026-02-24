@@ -1,0 +1,54 @@
+services:
+  # 1. Database Service (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: booking-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root123}
+      POSTGRES_DB: ${DB_NAME:-booking_db}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/src/init.sql:/docker-entrypoint-initdb.d/init.sql 
+
+  # 2. Backend Service (Node.js)
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: booking-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgres://${DB_USER:-postgres}:${DB_PASSWORD:-root123}@db:5432/${DB_NAME:-booking_db}
+    command: npm run dev
+    depends_on:
+      - db
+
+  # 3. Frontend Service (Vue.js / TypeScript)
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: booking-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:3000/api
+    command: npm run dev
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
