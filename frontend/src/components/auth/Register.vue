@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { auth, db } from '../../config/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -8,6 +9,7 @@ import { doc, setDoc } from 'firebase/firestore';
 const step = ref(1);
 const isLoading = ref(false);
 const loadingMessage = ref(''); // เพิ่ม state เพื่อบอกผู้ใช้ว่ากำลังทำอะไรอยู่
+const router = useRouter();
 
 // ฟิลด์ Step 1 (ข้อมูลพื้นฐาน)
 const profileImage = ref<File | null>(null);
@@ -25,6 +27,7 @@ const portfolioPreviews = ref<(string | null)[]>([null, null, null, null, null, 
 const priceStart = ref<number>(0);
 const location = ref('');
 const bio = ref('');
+const specialty = ref('');
 
 // ลิสต์จังหวัดชั่วคราว
 const provinces = ['กรุงเทพมหานคร', 'เชียงใหม่', 'ขอนแก่น', 'ชลบุรี', 'ภูเก็ต', 'นครราชสีมา'];
@@ -133,6 +136,7 @@ const handleRegister = async () => {
     if (role.value !== 'customer') {
       userData.provider_info = {
         service_type: role.value, // 'makeup' หรือ 'photographer'
+		specialty: specialty.value,
         bio: bio.value,
         location: location.value,
         price_start: priceStart.value,
@@ -145,8 +149,7 @@ const handleRegister = async () => {
     await setDoc(doc(db, 'users', user.uid), userData);
 
     alert('สมัครสมาชิกสำเร็จ!');
-    // TODO: Redirect หรือรีเฟรชหน้าไปหน้า Login
-    window.location.reload();
+    router.push('/login');
     
   } catch (error: any) {
     alert('เกิดข้อผิดพลาด: ' + error.message);
@@ -222,6 +225,11 @@ const handleRegister = async () => {
             </label>
             <input :id="'portfolio-' + index" type="file" accept="image/*" class="hidden" @change="(e) => handlePortfolioImage(e, index-1)" :disabled="isLoading" />
           </div>
+        </div>
+		
+		<div>
+          <label>ประเภทงานที่รับ (เช่น Cosplay Makeup, ถ่ายรูปรับปริญญา):</label>
+          <input v-model="specialty" type="text" required placeholder="ระบุประเภทงานที่ถนัด..." :disabled="isLoading" />
         </div>
 
         <div>

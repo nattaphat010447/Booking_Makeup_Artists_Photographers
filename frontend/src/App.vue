@@ -1,28 +1,26 @@
-<script setup lang="ts">
-import { ref } from 'vue';
-import Login from './components/auth/Login.vue';
-import Register from './components/auth/Register.vue';
-
-const currentView = ref('login');
-</script>
-
 <template>
-  <div class="container">
-    <h1>ระบบจองช่างแต่งหน้า & ช่างภาพ</h1>
-    
-    <div class="toggle-buttons">
-      <button @click="currentView = 'login'" :class="{ active: currentView === 'login' }">เข้าสู่ระบบ</button>
-      <button @click="currentView = 'register'" :class="{ active: currentView === 'register' }">สมัครสมาชิก</button>
-    </div>
-
-    <Login v-if="currentView === 'login'" />
-    <Register v-if="currentView === 'register'" />
+  <div class="mobile-container">
+    <router-view />
   </div>
 </template>
 
-<style scoped>
-.container { text-align: center; margin-top: 50px; }
-.toggle-buttons { margin-bottom: 20px; }
-.toggle-buttons button { margin: 0 10px; padding: 10px 20px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
-.toggle-buttons button.active { background: #333; color: white; border-color: #333; }
+<style>
+
+body {
+  background-color: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  margin: 0;
+}
+.mobile-container {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100vh;
+  background-color: #ffffff;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow-x: hidden;
+}
 </style>
