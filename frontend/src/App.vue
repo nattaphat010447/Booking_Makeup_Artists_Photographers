@@ -1,30 +1,28 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue';
+import Login from './components/auth/Login.vue';
+import Register from './components/auth/Register.vue';
+
+const currentView = ref('login');
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="container">
+    <h1>ระบบจองช่างแต่งหน้า & ช่างภาพ</h1>
+    
+    <div class="toggle-buttons">
+      <button @click="currentView = 'login'" :class="{ active: currentView === 'login' }">เข้าสู่ระบบ</button>
+      <button @click="currentView = 'register'" :class="{ active: currentView === 'register' }">สมัครสมาชิก</button>
+    </div>
+
+    <Login v-if="currentView === 'login'" />
+    <Register v-if="currentView === 'register'" />
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+.container { text-align: center; margin-top: 50px; }
+.toggle-buttons { margin-bottom: 20px; }
+.toggle-buttons button { margin: 0 10px; padding: 10px 20px; border: 1px solid #ccc; background: #fff; cursor: pointer; }
+.toggle-buttons button.active { background: #333; color: white; border-color: #333; }
 </style>
