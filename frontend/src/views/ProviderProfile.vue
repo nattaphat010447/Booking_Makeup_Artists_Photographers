@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { db, auth } from '../config/firebase';
-import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore'; // เพิ่ม deleteDoc
+import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const route = useRoute();
@@ -18,13 +18,13 @@ const isLoggedIn = ref(false);
 const showAuthModal = ref(false);
 
 const currentUser = ref<any>(null);
+const currentUserRole = ref<string>(''); // 💡 เก็บ Role ของคนที่กำลังดูหน้านี้
 const canReview = ref(false); 
 const hasReviewed = ref(false);
 const myReview = ref<any>(null);
 const isSubmittingReview = ref(false);
-const isEditingReview = ref(false); // สถานะเปิด/ปิดฟอร์มแก้ไข
+const isEditingReview = ref(false); 
 
-// ข้อมูลรีวิว
 const reviews = ref<any[]>([]);
 const reviewForm = ref({
   rating: 5,
@@ -39,15 +39,22 @@ onMounted(() => {
     isLoggedIn.value = !!user;
     if (user) {
       currentUser.value = user;
+      
+      // 💡 ดึง Role ของตัวเองเพื่อเอาไปเช็คซ่อนปุ่ม
+      const myDoc = await getDoc(doc(db, 'users', user.uid));
+      if (myDoc.exists()) {
+        currentUserRole.value = myDoc.data().role;
+      }
+
       await fetchReviews(); 
       await checkCanReview(user.uid);
     } else {
+      currentUserRole.value = '';
       await fetchReviews();
     }
   });
 });
 
-// แปลง Timestamp จาก Firebase ให้เป็น Format -> HH:MM dd/mm/yyyy
 const formatEditedTime = (timestamp: any) => {
   if (!timestamp) return '';
   const d = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -55,7 +62,6 @@ const formatEditedTime = (timestamp: any) => {
   return `${pad(d.getHours())}:${pad(d.getMinutes())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 };
 
-// ฟังก์ชันสำหรับคำนวณดาวเฉลี่ยใหม่ทั้งหมดของช่าง (ใช้ตอน เพิ่ม/แก้ไข/ลบ)
 const updateProviderRating = async () => {
   const q = query(collection(db, 'reviews'), where('providerId', '==', providerId));
   const snap = await getDocs(q);
@@ -103,10 +109,8 @@ const fetchReviews = async () => {
       fetchedReviews.push({ id: document.id, ...document.data() });
     });
     
-    // เรียงรีวิวใหม่สุดขึ้นก่อน
     reviews.value = fetchedReviews.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
 
-    // เช็คว่ามีรีวิวของเราเองไหม
     if (currentUser.value) {
       const foundMyReview = reviews.value.find(r => r.customerId === currentUser.value.uid);
       if (foundMyReview) {
@@ -128,11 +132,9 @@ const checkCanReview = async (myUid: string) => {
       canReview.value = false;
       return;
     }
-
     const roomId = myUid < providerId ? `${myUid}_${providerId}` : `${providerId}_${myUid}`;
     const q = query(collection(db, 'chats', roomId, 'messages'), where('type', '==', 'quotation'));
     const snap = await getDocs(q);
-    
     const hasPaid = snap.docs.some(document => document.data().data?.status === 'paid');
     canReview.value = hasPaid;
   } catch (error) {
@@ -148,13 +150,11 @@ const handleChatClick = () => {
   }
 };
 
-// ----------------- ส่งรีวิว (สร้างใหม่) -----------------
 const submitReview = async () => {
   if (!reviewForm.value.comment.trim()) {
     alert('กรุณากรอกข้อความรีวิว');
     return;
   }
-
   isSubmittingReview.value = true;
   try {
     const myDoc = await getDoc(doc(db, 'users', currentUser.value.uid));
@@ -171,6 +171,17 @@ const submitReview = async () => {
     };
 
     await addDoc(collection(db, 'reviews'), newReview);
+	
+	await addDoc(collection(db, 'notifications'), {
+      userId: providerId,
+      type: 'review',
+      title: '⭐ คุณได้รับรีวิวใหม่!',
+      message: `ลูกค้า ${myData.full_name} ได้เขียนรีวิวและให้คะแนนคุณ ${reviewForm.value.rating} ดาว`,
+      isRead: false,
+      createdAt: serverTimestamp(),
+      link: `/provider/${providerId}`
+    });
+	
     await updateProviderRating();
 
     alert('ขอบคุณสำหรับรีวิวครับ!');
@@ -187,27 +198,24 @@ const submitReview = async () => {
   }
 };
 
-// ----------------- เปิดฟอร์มแก้ไขรีวิว -----------------
 const startEditReview = () => {
   reviewForm.value.rating = myReview.value.rating;
   reviewForm.value.comment = myReview.value.comment;
   isEditingReview.value = true;
 };
 
-// ----------------- บันทึกการแก้ไขรีวิว -----------------
 const saveEditedReview = async () => {
   if (!reviewForm.value.comment.trim()) {
     alert('กรุณากรอกข้อความรีวิว');
     return;
   }
-
   isSubmittingReview.value = true;
   try {
     const reviewRef = doc(db, 'reviews', myReview.value.id);
     await updateDoc(reviewRef, {
       rating: reviewForm.value.rating,
       comment: reviewForm.value.comment,
-      updatedAt: serverTimestamp() // บันทึกเวลาที่แก้ไข
+      updatedAt: serverTimestamp() 
     });
 
     await updateProviderRating();
@@ -226,10 +234,8 @@ const saveEditedReview = async () => {
   }
 };
 
-// ----------------- ลบรีวิว -----------------
 const deleteReview = async () => {
   if (!confirm('คุณแน่ใจหรือไม่ที่จะลบรีวิวนี้?')) return;
-
   try {
     const reviewRef = doc(db, 'reviews', myReview.value.id);
     await deleteDoc(reviewRef);
@@ -241,7 +247,6 @@ const deleteReview = async () => {
     myReview.value = null;
     isEditingReview.value = false;
     
-    // คืนสิทธิ์ให้เขียนรีวิวใหม่ได้
     await checkCanReview(currentUser.value.uid);
     await fetchReviews();
     await fetchProvider();
@@ -295,7 +300,12 @@ const deleteReview = async () => {
           </div>
         </div>
 
-        <button class="chat-btn" @click="handleChatClick">💬 คุยกับ Service Provider</button>
+        <button 
+          v-if="currentUserRole !== 'provider'" 
+          class="chat-btn" 
+          @click="handleChatClick">
+          💬 คุยกับ Service Provider
+        </button>
       </div>
 
       <div class="reviews-section">

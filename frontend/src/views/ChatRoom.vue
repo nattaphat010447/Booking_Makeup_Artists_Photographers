@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { auth, db } from '../config/firebase';
-import { collection, doc, setDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, updateDoc, increment } from 'firebase/firestore'; // <--- เพิ่ม updateDoc, increment
+import { collection, doc, setDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, updateDoc, increment } from 'firebase/firestore';
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +15,7 @@ const myUid = currentUser?.uid || '';
 const roomId = myUid < otherUserId ? `${myUid}_${otherUserId}` : `${otherUserId}_${myUid}`;
 
 const messages = ref<any[]>([]);
+const chatMeta = ref<any>(null);
 const newMessage = ref('');
 const otherUser = ref<any>(null);
 const myRole = ref('customer');
@@ -26,7 +27,14 @@ const quoteWorkDate = ref('');
 
 const isUploadingSlip = ref(false); 
 const messagesContainer = ref<HTMLElement | null>(null);
-let unsubscribe: any = null;
+let unsubscribeMessages: any = null;
+let unsubscribeMeta: any = null;
+
+// 💡 หา ID ของข้อความ "ล่าสุดที่เราส่งเอง" เพื่อเอาไปโชว์สถานะอ่านแล้ว
+const lastMyMessageId = computed(() => {
+  const myMsgs = messages.value.filter(m => m.senderId === myUid);
+  return myMsgs.length > 0 ? myMsgs[myMsgs.length - 1].id : null;
+});
 
 // ================= Functions =================
 onMounted(async () => {
@@ -47,8 +55,20 @@ onMounted(async () => {
     otherUser.value = otherDoc.data();
   }
 
+  // 1. ดึงข้อมูล Meta ของห้องแชทเพื่อเช็คการอ่าน
+  unsubscribeMeta = onSnapshot(doc(db, 'chats', roomId), (docSnap) => {
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      chatMeta.value = data;
+      if (data.unreadBy === myUid) {
+        updateDoc(doc(db, 'chats', roomId), { unreadBy: '' });
+      }
+    }
+  });
+
+  // 2. ดึงข้อความแชท
   const q = query(collection(db, 'chats', roomId, 'messages'), orderBy('createdAt', 'asc'));
-  unsubscribe = onSnapshot(q, (snapshot) => {
+  unsubscribeMessages = onSnapshot(q, (snapshot) => {
     messages.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     nextTick(() => {
       if (messagesContainer.value) {
@@ -59,7 +79,8 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  if (unsubscribe) unsubscribe();
+  if (unsubscribeMessages) unsubscribeMessages();
+  if (unsubscribeMeta) unsubscribeMeta();
 });
 
 const sendMessage = async () => {
@@ -67,10 +88,12 @@ const sendMessage = async () => {
   const msgText = newMessage.value;
   newMessage.value = ''; 
 
+  // 💡 อัปเดต unreadBy ให้เป็นอีกฝ่าย
   await setDoc(doc(db, 'chats', roomId), {
     participants: [myUid, otherUserId],
     lastMessage: msgText,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
+    unreadBy: otherUserId 
   }, { merge: true });
 
   await addDoc(collection(db, 'chats', roomId, 'messages'), {
@@ -96,13 +119,14 @@ const sendQuotation = async () => {
     price: quotePrice.value,
     dateReserved: dateReserved,
     dateToWork: quoteWorkDate.value,
-    status: 'pending' // <--- เพิ่มสถานะใบเสนอราคา
+    status: 'pending'
   };
 
   await setDoc(doc(db, 'chats', roomId), {
     participants: [myUid, otherUserId],
     lastMessage: 'ส่งใบเสนอราคาแล้ว',
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
+    unreadBy: otherUserId
   }, { merge: true });
 
   await addDoc(collection(db, 'chats', roomId, 'messages'), {
@@ -117,7 +141,6 @@ const sendQuotation = async () => {
   quoteWorkDate.value = '';
 };
 
-// ----------------- ระบบอัปโหลดสลิป -----------------
 const uploadToCloudinary = async (file: File): Promise<string> => {
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -133,29 +156,24 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
   return data.secure_url;
 };
 
-// รับ msg ตัวเต็มมาเพื่อใช้ ID ในการอัปเดตสถานะ
 const handleSlipUpload = async (e: Event, msg: any) => {
   const file = (e.target as HTMLInputElement).files?.[0];
   if (!file) return;
 
   isUploadingSlip.value = true;
   try {
-    // 1. อัปโหลดรูปสลิปขึ้น Cloudinary
     const slipUrl = await uploadToCloudinary(file);
 
-    // 2. ปิดการส่งสลิปซ้ำ: อัปเดตใบเสนอราคานี้ให้เป็นสถานะ 'paid'
     const msgRef = doc(db, 'chats', roomId, 'messages', msg.id);
     await updateDoc(msgRef, {
       'data.status': 'paid'
     });
 
-    // 3. เพิ่มยอด Sold ให้กับช่าง +1 (โดยใช้ id ของคนส่งใบเสนอราคา)
     const providerRef = doc(db, 'users', msg.senderId);
     await updateDoc(providerRef, {
       'provider_info.sold_count': increment(1)
     });
 
-    // 4. ส่งข้อความประเภท "รูปภาพ (สลิป)" ลงแชท
     await addDoc(collection(db, 'chats', roomId, 'messages'), {
       senderId: myUid,
       type: 'image',
@@ -166,10 +184,10 @@ const handleSlipUpload = async (e: Event, msg: any) => {
     await setDoc(doc(db, 'chats', roomId), {
       participants: [myUid, otherUserId],
       lastMessage: 'ส่งหลักฐานการชำระเงินแล้ว',
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
+      unreadBy: otherUserId
     }, { merge: true });
 
-    // 5. จำลองระบบตรวจสอบอัตโนมัติ
     setTimeout(async () => {
       await addDoc(collection(db, 'chats', roomId, 'messages'), {
         senderId: 'system', 
@@ -181,7 +199,8 @@ const handleSlipUpload = async (e: Event, msg: any) => {
       await setDoc(doc(db, 'chats', roomId), {
         participants: [myUid, otherUserId],
         lastMessage: '[ระบบ] : ตรวจสอบการชำระเงินเรียบร้อย',
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
+        unreadBy: otherUserId
       }, { merge: true });
     }, 1500);
 
@@ -252,8 +271,12 @@ const handleSlipUpload = async (e: Event, msg: any) => {
               ✅ ลูกค้าชำระเงินเรียบร้อยแล้ว
             </div>
           </template>
-
         </div>
+
+        <div v-if="msg.id === lastMyMessageId && msg.type !== 'system'" class="read-receipt">
+          {{ chatMeta?.unreadBy === otherUserId ? 'ส่งแล้ว' : 'อ่านแล้ว' }}
+        </div>
+
       </div>
     </div>
 
@@ -284,7 +307,7 @@ const handleSlipUpload = async (e: Event, msg: any) => {
 </template>
 
 <style scoped>
-/* สไตล์เดิมทั้งหมด นำมาต่อตรงนี้ได้เลย ผมขอเพิ่ม CSS สำหรับกล่อง Paid Status นิดหน่อยครับ */
+/* CSS โครงสร้างแชท */
 .chat-container { display: flex; flex-direction: column; height: 100vh; background: #e5ddd5; }
 .chat-header { display: flex; align-items: center; padding: 15px; background: white; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 10; }
 .back-btn { background: none; border: none; font-size: 24px; cursor: pointer; margin-right: 15px; color: #333; }
@@ -296,6 +319,9 @@ const handleSlipUpload = async (e: Event, msg: any) => {
 .message-wrapper.sent { align-items: flex-end; }
 .message-wrapper.received { align-items: flex-start; }
 .message-wrapper.system { align-items: center; margin: 10px 0;}
+
+/* CSS สำหรับสถานะอ่านแล้ว */
+.read-receipt { font-size: 11px; color: #888; margin-top: 4px; margin-right: 5px; }
 
 .bubble { max-width: 80%; padding: 12px 16px; border-radius: 12px; font-size: 15px; text-align: left; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
 .text-bubble { background: white; }
@@ -317,7 +343,6 @@ const handleSlipUpload = async (e: Event, msg: any) => {
 .btn-slip.disabled { background: #90caf9; cursor: not-allowed; }
 .hidden { display: none; }
 
-/* CSS ใหม่สำหรับข้อความเมื่อจ่ายเงินแล้ว */
 .paid-status-box { margin-top: 15px; padding: 10px; background: #E8F5E9; color: #2E7D32; border-radius: 8px; text-align: center; font-weight: bold; font-size: 14px; border: 1px solid #C8E6C9;}
 
 .chat-footer { display: flex; align-items: center; padding: 10px 15px; background: #f0f0f0; gap: 10px; }

@@ -30,8 +30,11 @@ const specialty = ref('');
 const bio = ref('');
 const location = ref('');
 const priceStart = ref(0);
+const serviceType = ref(''); 
+const ratingAvg = ref(0);
+const soldCount = ref(0);
 
-// Portfolios (จำลอง 6 ช่อง เหมือนตอนสมัคร)
+// Portfolios 
 const portfolioPreviews = ref<(string | null)[]>([null, null, null, null, null, null]);
 const newPortfolioImages = ref<(File | null)[]>([null, null, null, null, null, null]);
 
@@ -71,7 +74,11 @@ const fetchUserData = async (userId: string) => {
         location.value = info.location || '';
         priceStart.value = info.price_start || 0;
         
-        // ดึงรูป Portfolio เก่ามาใส่ใน Preview
+        // 💡 เก็บค่าเดิมไว้
+        serviceType.value = info.service_type || 'makeup';
+        ratingAvg.value = info.rating_avg || 0;
+        soldCount.value = info.sold_count || 0;
+        
         if (info.portfolios && Array.isArray(info.portfolios)) {
           info.portfolios.forEach((url: string, index: number) => {
             if (index < 6) portfolioPreviews.value[index] = url;
@@ -102,7 +109,6 @@ const handlePortfolioImage = (e: Event, index: number) => {
   }
 };
 
-// นำฟังก์ชันอัปโหลดรูปกลับมาใช้
 const uploadToCloudinary = async (file: File | null): Promise<string> => {
   if (!file) return '';
   const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
@@ -126,13 +132,11 @@ const handleSave = async () => {
   try {
     let currentProfileUrl = profilePreview.value;
     
-    // 1. ถ้ามีการเปลี่ยนรูปโปรไฟล์ใหม่อัปโหลดก่อน
     if (newProfileImage.value) {
       saveMessage.value = 'กำลังอัปโหลดรูปโปรไฟล์...';
       currentProfileUrl = await uploadToCloudinary(newProfileImage.value);
     }
 
-    // 2. เตรียมข้อมูลอัปเดต
     const updateData: any = {
       full_name: fullName.value,
       phone: phone.value,
@@ -140,13 +144,11 @@ const handleSave = async () => {
       updated_at: new Date()
     };
 
-    // 3. ถ้าเป็น Provider ให้อัปเดตข้อมูลย่อยด้วย
     if (role.value === 'provider') {
       saveMessage.value = 'กำลังจัดการรูปผลงาน...';
       
-      let updatedPortfolios = [...portfolioPreviews.value]; // ใช้รูปเก่าเป็นฐาน
+      let updatedPortfolios = [...portfolioPreviews.value]; 
       
-      // ไล่อัปโหลดรูปใหม่ที่ถูกเลือกเข้ามาทับรูปเก่า
       for (let i = 0; i < 6; i++) {
         if (newPortfolioImages.value[i]) {
           const newUrl = await uploadToCloudinary(newPortfolioImages.value[i]);
@@ -154,35 +156,33 @@ const handleSave = async () => {
         }
       }
 
-      // กรองเอาเฉพาะช่องที่มี URL จริงๆ (ตัด null ทิ้ง)
       const finalPortfolios = updatedPortfolios.filter(url => url !== null);
 
       updateData.provider_info = {
-        service_type: role.value, // รักษาค่าเดิมไว้
+        service_type: serviceType.value, // 💡 ใช้ค่า service_type ตัวเดิม
         specialty: specialty.value,
         bio: bio.value,
         location: location.value,
         price_start: priceStart.value,
         portfolios: finalPortfolios,
-        rating_avg: 0 // Mock ไว้ก่อน
+        rating_avg: ratingAvg.value, // 💡 คงค่าดาวเดิม
+        sold_count: soldCount.value // 💡 คงค่ายอด sold เดิม
       };
     }
 
-    // 4. บันทึกลง Firestore
     saveMessage.value = 'กำลังบันทึกลงระบบ...';
     await updateDoc(doc(db, 'users', uid.value), updateData);
 
-    // 5. อัปเดตรหัสผ่าน (ถ้ามีการกรอกมา)
     if (newPassword.value && auth.currentUser) {
       saveMessage.value = 'กำลังเปลี่ยนรหัสผ่าน...';
       await updatePassword(auth.currentUser, newPassword.value);
-      newPassword.value = ''; // เคลียร์ช่อง
+      newPassword.value = ''; 
     }
 
     alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
   } catch (error: any) {
     console.error(error);
-    alert('เกิดข้อผิดพลาด: ' + (error.message || 'กรุณาลองใหม่ (การเปลี่ยนรหัสผ่านอาจต้อง Logout แล้ว Login ใหม่ก่อน)'));
+    alert('เกิดข้อผิดพลาด: ' + (error.message || 'กรุณาลองใหม่'));
   } finally {
     isSaving.value = false;
     saveMessage.value = '';

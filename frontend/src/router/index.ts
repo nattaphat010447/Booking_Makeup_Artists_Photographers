@@ -8,16 +8,18 @@ const ProviderProfile = () => import('../views/ProviderProfile.vue');
 const ChatList = () => import('../views/ChatList.vue');
 const ChatRoom = () => import('../views/ChatRoom.vue');
 const MyProfile = () => import('../views/MyProfile.vue');
+const NotificationList = () => import('../views/NotificationList.vue');
 
 const routes = [
-  { path: '/', component: HomeView }, // 1. หน้าแรก
-  { path: '/register', component: Register }, // 2. หน้าสมัคร
-  { path: '/login', component: Login }, // 3. หน้าเข้าสู่ระบบ
-  { path: '/search', component: SearchProvider }, // 4. & 6. หน้าค้นหา (เดี๋ยวเราไปเช็ค auth status ข้างใน)
-  { path: '/provider/:id', component: ProviderProfile }, // 5. & 7. หน้าโปรไฟล์ช่าง
-  { path: '/chats', component: ChatList }, // 8. หน้าแชทรวม
-  { path: '/chat/:id', component: ChatRoom }, // 10. หน้าแชทกับ Provider
-  { path: '/profile', component: MyProfile }, // 9. หน้าจัดการโปรไฟล์ตัวเอง
+  { path: '/', component: HomeView },
+  { path: '/register', component: Register },
+  { path: '/login', component: Login },
+  { path: '/search', component: SearchProvider },
+  { path: '/provider/:id', component: ProviderProfile },
+  { path: '/chats', component: ChatList },
+  { path: '/chat/:id', component: ChatRoom }, 
+  { path: '/profile', component: MyProfile },
+  { path: '/notifications', component: NotificationList },
 ];
 
 const router = createRouter({
