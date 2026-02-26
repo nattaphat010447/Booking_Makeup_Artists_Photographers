@@ -93,39 +93,3 @@ const deleteNotification = async (id: string, event: Event) => {
   </div>
 </template>
 
-<style scoped>
-.page-container { display: flex; flex-direction: column; min-height: 100vh; background: #f9f9f9; }
-.header { padding: 20px; background: white; border-bottom: 1px solid #eee; text-align: left;}
-.header h2 { margin: 0; font-size: 20px; color: #333; }
-.loading, .empty { text-align: center; padding: 50px; color: #888; font-size: 16px; }
-
-.noti-list { display: flex; flex-direction: column; }
-.noti-card { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: flex-start;
-  padding: 15px 20px; 
-  background: white; 
-  border-bottom: 1px solid #eee; 
-  cursor: pointer; 
-  transition: 0.2s; 
-}
-/* สีพื้นหลังสำหรับอันที่ยังไม่อ่าน */
-.noti-card.unread { background: #E3F2FD; }
-
-.noti-content { flex: 1; text-align: left; padding-right: 10px; }
-.noti-title { font-weight: bold; font-size: 15px; color: #333; margin-bottom: 4px; }
-.noti-message { font-size: 14px; color: #555; margin-bottom: 6px; line-height: 1.4; }
-.noti-time { font-size: 11px; color: #888; }
-
-.delete-btn { 
-  background: none; 
-  border: none; 
-  color: #999; 
-  font-size: 16px; 
-  cursor: pointer; 
-  padding: 5px; 
-  border-radius: 50%;
-}
-.delete-btn:hover { background: #ffebee; color: #d32f2f; }
-</style>

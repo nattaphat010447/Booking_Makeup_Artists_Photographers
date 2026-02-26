@@ -37,11 +37,11 @@ const fetchChatRooms = (myUid: string) => {
     
     for (const document of snapshot.docs) {
       const data = document.data();
-      // หา UID ของอีกฝั่ง (คนที่ไม่ใช่เรา)
+      // หา UID ของอีกฝั่ง
       const otherUid = data.participants.find((uid: string) => uid !== myUid);
       
       if (otherUid) {
-        // ดึงข้อมูล Profile ของอีกฝั่งมาโชว์
+        // ดึงข้อมูล Profile ของอีกฝั่งมา
         const userSnap = await getDoc(doc(db, 'users', otherUid));
         const userData = userSnap.exists() ? userSnap.data() : { full_name: 'Unknown User', profile_image: '' };
 
@@ -50,7 +50,7 @@ const fetchChatRooms = (myUid: string) => {
           name: userData.full_name,
           avatar: userData.profile_image || 'https://via.placeholder.com/50',
           lastMessage: data.lastMessage || 'ส่งรูปภาพ/ใบเสนอราคา',
-          updatedAt: data.updatedAt?.toMillis() || 0 // เพื่อเอามาเรียงลำดับ
+          updatedAt: data.updatedAt?.toMillis() || 0
         });
       }
     }
@@ -94,20 +94,3 @@ const fetchChatRooms = (myUid: string) => {
   </div>
 </template>
 
-<style scoped>
-.page-container { display: flex; flex-direction: column; min-height: 100vh; background: #f9f9f9; }
-.chat-header { padding: 20px; background: white; border-bottom: 1px solid #eee; text-align: left;}
-.chat-header h2 { margin: 0; font-size: 20px; color: #333; }
-
-.loading, .empty { text-align: center; padding: 40px; color: #888; }
-
-.chat-list { display: flex; flex-direction: column; }
-.chat-item { display: flex; align-items: center; padding: 15px 20px; background: white; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
-.chat-item:hover { background: #f0f2f5; }
-.avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 15px; }
-.chat-info { flex: 1; text-align: left; overflow: hidden; }
-.row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-.name { font-weight: bold; font-size: 16px; color: #333; }
-.time { font-size: 12px; color: #888; }
-.last-message { margin: 0; font-size: 14px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-</style>

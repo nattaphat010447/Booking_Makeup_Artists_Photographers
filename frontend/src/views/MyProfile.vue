@@ -159,14 +159,14 @@ const handleSave = async () => {
       const finalPortfolios = updatedPortfolios.filter(url => url !== null);
 
       updateData.provider_info = {
-        service_type: serviceType.value, // 💡 ใช้ค่า service_type ตัวเดิม
+        service_type: serviceType.value,
         specialty: specialty.value,
         bio: bio.value,
         location: location.value,
         price_start: priceStart.value,
         portfolios: finalPortfolios,
-        rating_avg: ratingAvg.value, // 💡 คงค่าดาวเดิม
-        sold_count: soldCount.value // 💡 คงค่ายอด sold เดิม
+        rating_avg: ratingAvg.value, 
+        sold_count: soldCount.value
       };
     }
 
@@ -214,7 +214,7 @@ const handleSave = async () => {
           </div>
 
           <div class="input-group">
-            <label>อีเมล (แก้ไขไม่ได้):</label>
+            <label>อีเมล:</label>
             <input type="email" :value="email" disabled class="disabled-input" />
           </div>
 
@@ -239,7 +239,7 @@ const handleSave = async () => {
           <h3>ข้อมูลผู้ให้บริการ (Portfolio & Bio)</h3>
 
           <div class="input-group">
-            <label>ประเภทงานที่รับ (Specialty):</label>
+            <label>ประเภทงานที่รับ:</label>
             <input v-model="specialty" type="text" placeholder="เช่น Cosplay Makeup..." :disabled="isSaving" />
           </div>
 
@@ -249,7 +249,7 @@ const handleSave = async () => {
           </div>
 
           <div class="input-group">
-            <label>จังหวัดที่รับงาน (หลัก):</label>
+            <label>จังหวัดที่รับงาน:</label>
             <select v-model="location" required :disabled="isSaving">
               <option value="" disabled>-- เลือกจังหวัด --</option>
               <option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</option>
@@ -284,34 +284,3 @@ const handleSave = async () => {
   </div>
 </template>
 
-<style scoped>
-.page-container { display: flex; flex-direction: column; min-height: 100vh; background: #f0f2f5; padding-bottom: 50px;}
-.loading { text-align: center; padding: 50px; color: #888; }
-.profile-editor { padding: 20px; text-align: left; }
-.profile-editor h2 { margin-top: 0; margin-bottom: 20px; color: #333; text-align: center;}
-
-.section-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
-.section-card h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; font-size: 16px; color: #4CAF50;}
-
-/* Profile Upload */
-.profile-upload { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
-.preview-box { width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid #eee; margin-bottom: 10px; }
-.img-preview { width: 100%; height: 100%; object-fit: cover; }
-.btn-change-img { background: #f0f2f5; color: #333; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; font-weight: bold; border: 1px solid #ddd;}
-.hidden { display: none; }
-
-/* Forms */
-.input-group { margin-bottom: 15px; }
-.input-group label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 14px; color: #333;}
-.input-group input, .input-group select, .input-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit;}
-.disabled-input { background-color: #f5f5f5; color: #888; cursor: not-allowed; }
-.hint { font-size: 11px; color: #f44336; margin-top: 5px; display: block;}
-
-/* Portfolio Grid */
-.portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 5px;}
-.upload-area { display: flex; align-items: center; justify-content: center; height: 100px; border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; overflow: hidden; background: #fafafa; }
-.upload-area:hover { border-color: #4CAF50; }
-
-.btn-save { width: 100%; padding: 15px; background: #333; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;}
-.btn-save:disabled { background: #999; cursor: not-allowed; }
-</style>

@@ -259,21 +259,3 @@ const handleRegister = async () => {
   </div>
 </template>
 
-<style scoped>
-.auth-box { border: 1px solid #ddd; padding: 20px; border-radius: 8px; max-width: 450px; margin: auto; background: #fff; color: #333; }
-.step-content { display: flex; flex-direction: column; gap: 12px; }
-div { text-align: left; }
-label { font-weight: bold; font-size: 0.9em; margin-bottom: 4px; display: block; }
-input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;}
-
-.preview-box { width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 8px; background: #f9f9f9; }
-.btn-primary { width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 10px;}
-.btn-primary:disabled { background-color: #9E9E9E; cursor: not-allowed; }
-.btn-back { background: none; border: none; color: #007BFF; cursor: pointer; text-align: left; padding: 0; font-weight: bold;}
-
-.portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.upload-area { display: flex; align-items: center; justify-content: center; height: 100px; border: 2px dashed #ccc; border-radius: 8px; cursor: pointer; overflow: hidden; background: #f9f9f9; }
-.upload-area:hover { border-color: #4CAF50; }
-.img-preview { width: 100%; height: 100%; object-fit: cover; }
-.hidden { display: none; }
-</style>

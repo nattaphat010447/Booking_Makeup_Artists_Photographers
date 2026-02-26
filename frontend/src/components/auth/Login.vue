@@ -42,12 +42,3 @@ const handleLogin = async () => {
   </div>
 </template>
 
-<style scoped>
-.auth-container { padding: 30px 20px; }
-.back-btn { background: none; border: none; font-size: 16px; margin-bottom: 20px; padding: 0; color: #666; cursor: pointer; }
-h2 { margin-bottom: 20px; text-align: left;}
-.input-group { margin-bottom: 15px; text-align: left; }
-.input-group label { display: block; margin-bottom: 5px; font-weight: bold;}
-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-.submit-btn { width: 100%; padding: 15px; background-color: #333; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px;}
-</style>
