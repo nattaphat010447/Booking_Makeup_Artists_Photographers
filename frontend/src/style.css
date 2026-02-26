@@ -1050,12 +1050,66 @@ textarea {
   background: #ffffff;
   color: #2c1810;
 }
-.province-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-  font-size: 14px;
-  color: #2c1810;
+.province-search-container { 
+  position: relative; 
+  margin-bottom: 10px; 
+}
+.province-dropdown { 
+  position: absolute; 
+  top: 100%; 
+  left: 0; 
+  right: 0; 
+  background: #ffffff; 
+  border: 1px solid #8b7355; 
+  border-radius: 8px; 
+  max-height: 150px; 
+  overflow-y: auto; 
+  z-index: 10; 
+  box-shadow: 0 4px 6px rgba(44, 24, 16, 0.1); 
+  margin-top: 5px; 
+}
+.dropdown-item { 
+  padding: 10px 12px; 
+  cursor: pointer; 
+  color: #2c1810; 
+  font-size: 14px; 
+}
+.dropdown-item:hover { 
+  background-color: #f8f0e8; 
+  color: #c89f8a; 
+  font-weight: bold; 
+}
+.selected-tags { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+  margin-top: 10px; 
+}
+.tag { 
+  display: inline-flex; 
+  align-items: center; 
+  background-color: #f8f0e8; 
+  color: #2c1810; 
+  padding: 6px 12px; 
+  border-radius: 20px; 
+  font-size: 13px; 
+  border: 1px solid #c89f8a; 
+}
+.remove-tag { 
+  background: none; 
+  border: none; 
+  color: #c89f8a; 
+  margin-left: 6px; 
+  font-size: 12px; 
+  font-weight: bold; 
+  cursor: pointer; 
+  padding: 0; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+}
+.remove-tag:hover { 
+  color: #2c1810; 
 }
 .filter-actions {
   display: flex;

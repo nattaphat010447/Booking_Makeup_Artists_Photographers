@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { db } from '../config/firebase';
@@ -19,7 +19,7 @@ const selectedRoles = ref<string[]>(['makeup', 'photographer']);
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
 const selectedProvinces = ref<string[]>([]);
-const provinces = ['กรุงเทพมหานคร', 'เชียงใหม่', 'ขอนแก่น', 'ชลบุรี', 'ภูเก็ต', 'นครราชสีมา'];
+const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'เทศบาลตำบลอุโมงค์', 'นครราชสีมา', 'กรุงเทพมหานคร']
 
 const activeFilters = ref({
   roles: ['makeup', 'photographer'],
@@ -28,9 +28,41 @@ const activeFilters = ref({
   provinces: [] as string[]
 });
 
+// ================= สำหรับค้นหาจังหวัด =================
+const provinceSearch = ref('');
+const isProvinceDropdownOpen = ref(false);
+const provinceContainerRef = ref<HTMLElement | null>(null);
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (
+    provinceContainerRef.value && 
+    !provinceContainerRef.value.contains(event.target as Node)
+  ) {
+    isProvinceDropdownOpen.value = false; // ถ้าคลิกนอกกล่อง ให้ปิด Dropdown
+  }
+};
+
+const filteredProvincesList = computed(() => {
+  const keyword = provinceSearch.value.trim().toLowerCase();
+  return provinces.filter(p => 
+    p.toLowerCase().includes(keyword) && !selectedProvinces.value.includes(p)
+  );
+});
+
 // ================= Functions =================
 
-// ดึงข้อมูลจาก Firestore
+const selectProvince = (prov: string) => {
+  if (!selectedProvinces.value.includes(prov)) {
+    selectedProvinces.value.push(prov);
+  }
+  provinceSearch.value = ''; 
+  isProvinceDropdownOpen.value = false; 
+};
+
+const removeProvince = (prov: string) => {
+  selectedProvinces.value = selectedProvinces.value.filter(p => p !== prov);
+};
+
 const fetchProviders = async () => {
   isLoading.value = true;
   try {
@@ -49,7 +81,6 @@ const fetchProviders = async () => {
   }
 };
 
-// นำค่าจากฟอร์มมากด Apply 
 const applyFilter = () => {
   activeFilters.value = {
     roles: [...selectedRoles.value],
@@ -57,19 +88,17 @@ const applyFilter = () => {
     maxPrice: maxPrice.value,
     provinces: [...selectedProvinces.value]
   };
-  showFilter.value = false; // ปิดกล่อง Filter
+  showFilter.value = false; 
 };
 
-// เคลียร์ค่า Filter ทั้งหมด
 const clearFilter = () => {
   selectedRoles.value = ['makeup', 'photographer'];
   minPrice.value = null;
   maxPrice.value = null;
   selectedProvinces.value = [];
-  applyFilter(); // นำค่าว่างไป Apply ทันที
+  applyFilter(); 
 };
 
-// กรองข้อมูลบน Frontend โดยอิงจาก "activeFilters" แทน
 const filteredProviders = computed(() => {
   return providers.value.filter((p) => {
     const info = p.provider_info || {};
@@ -90,12 +119,17 @@ const filteredProviders = computed(() => {
 });
 
 onMounted(() => {
-  // รับค่ามาจากหน้าแรก
   if (route.query.role) {
     selectedRoles.value = [route.query.role as string];
     activeFilters.value.roles = [route.query.role as string];
   }
   fetchProviders();
+
+  document.addEventListener('click', handleClickOutside); 
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 
@@ -120,11 +154,33 @@ onMounted(() => {
           <input type="number" v-model="maxPrice" placeholder="Max" />
         </div>
 
-        <h4>จังหวัด</h4>
-        <div class="province-grid">
-          <label v-for="prov in provinces" :key="prov">
-            <input type="checkbox" :value="prov" v-model="selectedProvinces"> {{ prov }}
-          </label>
+        <h4>จังหวัดที่รับงาน</h4>
+        <div class="province-search-container" ref="provinceContainerRef"> 
+          <input 
+            type="text" 
+            v-model="provinceSearch" 
+            placeholder="พิมพ์ชื่อจังหวัดเพื่อค้นหา..." 
+            @focus="isProvinceDropdownOpen = true" 
+            @blur="setTimeout(() => isProvinceDropdownOpen = false, 200)"
+            />
+          
+          <div v-if="isProvinceDropdownOpen && filteredProvincesList.length > 0" class="province-dropdown">
+            <div 
+              v-for="prov in filteredProvincesList" 
+              :key="prov" 
+              class="dropdown-item"
+              @click="selectProvince(prov)"
+            >
+              {{ prov }}
+            </div>
+          </div>
+        </div>
+
+        <div class="selected-tags" v-if="selectedProvinces.length > 0">
+          <span v-for="prov in selectedProvinces" :key="prov" class="tag">
+            {{ prov }}
+            <button type="button" class="remove-tag" @click="removeProvince(prov)">✕</button>
+          </span>
         </div>
 
         <div class="filter-actions">
@@ -165,4 +221,3 @@ onMounted(() => {
 
   </div>
 </template>
-
