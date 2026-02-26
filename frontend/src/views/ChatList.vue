@@ -1,27 +1,66 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
+import { auth, db } from '../config/firebase';
+import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const router = useRouter();
+const chatRooms = ref<any[]>([]);
+const isLoading = ref(true);
+let unsubscribe: any = null;
 
-// Mockup Data: รายการคนที่เคยคุยด้วย
-const chatRooms = ref([
-  { 
-    id: 'user_123', 
-    name: 'พี่นัท ช่างภาพอิสระ (Mockup)', 
-    avatar: 'https://via.placeholder.com/50', 
-    lastMessage: 'ส่งใบเสนอราคาให้แล้วนะครับ', 
-    time: '10:30' 
-  },
-  { 
-    id: 'user_456', 
-    name: 'น้องเมย์ แต่งหน้าทำผม', 
-    avatar: 'https://via.placeholder.com/50', 
-    lastMessage: 'วันเสาร์นี้คิวว่างค่ะ สนใจจองเลยไหมคะ?', 
-    time: 'เมื่อวาน' 
-  }
-]);
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      fetchChatRooms(user.uid);
+    } else {
+      router.push('/login');
+    }
+  });
+});
+
+onUnmounted(() => {
+  if (unsubscribe) unsubscribe();
+});
+
+const fetchChatRooms = (myUid: string) => {
+  // ดึงเฉพาะห้องแชทที่ตัวเองอยู่ในวงสนทนา (participants)
+  const q = query(
+    collection(db, 'chats'),
+    where('participants', 'array-contains', myUid)
+  );
+
+  unsubscribe = onSnapshot(q, async (snapshot) => {
+    let roomsData: any[] = [];
+    
+    for (const document of snapshot.docs) {
+      const data = document.data();
+      // หา UID ของอีกฝั่ง (คนที่ไม่ใช่เรา)
+      const otherUid = data.participants.find((uid: string) => uid !== myUid);
+      
+      if (otherUid) {
+        // ดึงข้อมูล Profile ของอีกฝั่งมาโชว์
+        const userSnap = await getDoc(doc(db, 'users', otherUid));
+        const userData = userSnap.exists() ? userSnap.data() : { full_name: 'Unknown User', profile_image: '' };
+
+        roomsData.push({
+          id: otherUid, // ใช้ otherUid ไปต่อท้าย URL
+          name: userData.full_name,
+          avatar: userData.profile_image || 'https://via.placeholder.com/50',
+          lastMessage: data.lastMessage || 'ส่งรูปภาพ/ใบเสนอราคา',
+          updatedAt: data.updatedAt?.toMillis() || 0 // เพื่อเอามาเรียงลำดับ
+        });
+      }
+    }
+    
+    // จัดเรียงให้แชทล่าสุดอยู่บนสุด
+    roomsData.sort((a, b) => b.updatedAt - a.updatedAt);
+    chatRooms.value = roomsData;
+    isLoading.value = false;
+  });
+};
 </script>
 
 <template>
@@ -32,7 +71,10 @@ const chatRooms = ref([
       <h2>💬 ข้อความของคุณ</h2>
     </div>
 
-    <div class="chat-list">
+    <div v-if="isLoading" class="loading">กำลังโหลดข้อความ...</div>
+    <div v-else-if="chatRooms.length === 0" class="empty">ยังไม่มีประวัติการสนทนา</div>
+
+    <div v-else class="chat-list">
       <div 
         v-for="chat in chatRooms" 
         :key="chat.id" 
@@ -43,7 +85,7 @@ const chatRooms = ref([
         <div class="chat-info">
           <div class="row-top">
             <span class="name">{{ chat.name }}</span>
-            <span class="time">{{ chat.time }}</span>
+            <span class="time">ล่าสุด</span>
           </div>
           <p class="last-message">{{ chat.lastMessage }}</p>
         </div>
@@ -56,6 +98,8 @@ const chatRooms = ref([
 .page-container { display: flex; flex-direction: column; min-height: 100vh; background: #f9f9f9; }
 .chat-header { padding: 20px; background: white; border-bottom: 1px solid #eee; text-align: left;}
 .chat-header h2 { margin: 0; font-size: 20px; color: #333; }
+
+.loading, .empty { text-align: center; padding: 40px; color: #888; }
 
 .chat-list { display: flex; flex-direction: column; }
 .chat-item { display: flex; align-items: center; padding: 15px 20px; background: white; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }

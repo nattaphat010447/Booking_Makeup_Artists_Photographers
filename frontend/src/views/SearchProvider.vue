@@ -128,7 +128,7 @@ onMounted(() => {
               <span class="name">{{ provider.full_name }}</span>
             </div>
             <div class="stats">
-              <span>💼 Sold 0</span>
+              <span>💼 Sold {{ provider.provider_info?.sold_count || 0 }}</span>
               <span>⭐ {{ provider.provider_info?.rating_avg || '0.0' }}</span>
             </div>
           </div>

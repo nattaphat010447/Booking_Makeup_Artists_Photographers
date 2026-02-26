@@ -22,7 +22,7 @@ const handleSignOut = async () => {
 
 <template>
   <nav class="navbar">
-    <div class="brand" @click="router.push('/')">
+    <div class="brand" @click="router.push('/search')">
       📸 BookBeauty
     </div>
     
