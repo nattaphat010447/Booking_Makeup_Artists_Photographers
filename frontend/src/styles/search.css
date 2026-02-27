@@ -1,0 +1,11 @@
+.search-header {
+  padding:15px;
+  background:#fff;
+}
+
+.provider-list {
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}

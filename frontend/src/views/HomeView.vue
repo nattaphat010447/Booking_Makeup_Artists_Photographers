@@ -1,3 +1,4 @@
+<style src="src/styles/home.css"></style>
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 
@@ -10,21 +11,67 @@ const goSearch = (role: string) => {
 </script>
 
 <template>
-  <div class="home-page">
-    <div class="hero-section">
-      <h1>จองช่างภาพ<br>& ช่างแต่งหน้า</h1>
-      <p>ค้นหามืออาชีพที่ใช่ สำหรับวันสำคัญของคุณ</p>
-    </div>
+  <div class="page">
+    
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-inner">
 
-    <div class="action-buttons">
-      <button class="btn-primary" @click="goSearch('makeup')">💄 หาช่างแต่งหน้า</button>
-      <button class="btn-primary" @click="goSearch('photographer')">📸 หาตากล้อง</button>
-    </div>
+        <!-- LOGO -->
+        <img
+          src="/images/Bookibooki.png"
+          alt="BookiBooki Logo"
+          class="logo"
+        />
 
-    <div class="auth-buttons">
-      <button class="btn-outline" @click="router.push('/register')">สมัครสมาชิก</button>
-      <button class="btn-solid" @click="router.push('/login')">Sign In</button>
-    </div>
+        <div class="action-buttons">
+
+          <button class="btn-primary" @click="goSearch('makeup')">
+            <img src="/images/brush.png" class="btn-icon" />
+            Find Makeup Artists
+          </button>
+
+          <button class="btn-primary" @click="goSearch('photographer')">
+            <img src="/images/camera.png" class="btn-icon" />
+            Find Photographers
+          </button>
+
+        </div>
+
+        <div class="auth-buttons">
+          <button class="btn-outline" @click="router.push('/register')">
+            Sign up
+          </button>
+
+          <button class="btn-solid" @click="router.push('/login')">
+            Sign in
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <main class="main-content">
+    <section class="about">
+      <div class="container">
+        <h2>About Us</h2>
+        <p>
+          Booki Booki is an online platform that makes it easy to find and book
+          professional makeup artists and photographers. Customers can book
+          services quickly, while service providers manage schedules and bookings
+          in one simple place.
+        </p>
+      </div>
+    </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <p>Booki Booki</p>
+      <p>An online booking platform for makeup artists and photographers.</p>
+      <p>© 2026 College of Computing | Khon Kaen University</p>
+    </footer>
+
   </div>
 </template>
-

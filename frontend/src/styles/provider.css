@@ -1,0 +1,15 @@
+.gallery-section {
+  display:flex;
+  flex-direction:column;
+}
+
+.main-image {
+  width:100%;
+  height:350px;
+  object-fit:cover;
+}
+
+.details-section {
+  padding:20px;
+  background:#fff;
+}

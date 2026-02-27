@@ -1,0 +1,10 @@
+.noti-list {
+  display:flex;
+  flex-direction:column;
+}
+
+.noti-card {
+  padding:15px 20px;
+  background:#fff;
+  border-bottom:1px solid #f8f0e8;
+}
