@@ -1,3 +1,4 @@
+<style src="src/styles/chat.css"></style>
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';

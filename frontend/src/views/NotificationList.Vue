@@ -1,3 +1,4 @@
+<style src="src/styles/notification.css"></style>
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
