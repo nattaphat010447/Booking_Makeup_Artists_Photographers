@@ -66,12 +66,5 @@ const goSearch = (role: string) => {
     </section>
     </main>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-      <p>Booki Booki</p>
-      <p>An online booking platform for makeup artists and photographers.</p>
-      <p>© 2026 College of Computing | Khon Kaen University</p>
-    </footer>
-
   </div>
 </template>
