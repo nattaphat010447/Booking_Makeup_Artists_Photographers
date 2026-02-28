@@ -56,9 +56,11 @@ const handleSignOut = async () => {
 
 <template>
   <nav class="navbar">
-    <div class="brand" @click="router.push('/search')">
-      📸 BookBeauty
-    </div>
+    <div class="nav-logo">
+          <router-link to="/">
+            <img src="/images/Bookibooki.png" alt="Booki Booki Logo" class="logo-img" />
+          </router-link>
+        </div>
     
     <div v-if="isLoggedIn" class="nav-icons">
       <div class="icon-wrapper" @click="router.push('/chats')">

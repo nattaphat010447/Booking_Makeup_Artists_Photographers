@@ -275,7 +275,7 @@ const handleRegister = async () => {
 
 .signup-card {
   width: 380px;
-  background: white;
+  background: #FFFFFF;
   padding: 40px;
   border-radius: 16px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);

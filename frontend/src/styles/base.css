@@ -1,24 +1,252 @@
-/* GLOBAL */
+/* import font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Prompt:wght@400;500;600;700&display=swap');
+
+
+/* ===============================
+   GLOBAL RESET (กัน layout ล้น)
+================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  min-width: 0; /* ⭐ FIX FLEX OVERFLOW */
+}
+
+html,
 body {
-  background-color: #f8f4f0;
   margin: 0;
-  min-height: 100vh;
-  color: #2c1810;
-  font-family: "Inter", "Noto Sans Thai", sans-serif;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* กัน scroll แนวนอน */
+
+  font-family:
+    "Poppins",
+    "Prompt",
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  background: #FAFAFA;
+  color: #2c2c2c;
 }
 
-/* TYPOGRAPHY */
-h1,h2,h3,h4,h5,h6 {
-  color: #2c1810;
+
+/* ===============================
+   NAVBAR
+================================ */
+
+.navbar {
+  width: 100%;
+  max-width: 100%;
+  height: 72px;
+  background: #FFFFFF;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 10px;
 }
 
-.hidden {
-  display: none;
+.nav-container {
+  width: 100%;
+  max-width: 1300px;
+  margin-inline: auto;
+  padding-inline: 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-width: 0; /* ⭐ สำคัญ */
 }
 
-.loading,
-.empty {
+
+/* ===== LOGO ===== */
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.nav-logo a {
+  text-decoration: none;
+  color: #3b2b26;
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 42px;
+  width: auto;
+  max-width: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+
+/* ===== RIGHT BUTTONS ===== */
+
+.nav-actions {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-nav1,
+.btn-nav2 {
+  white-space: nowrap;
+  text-decoration: none;
+  font-weight: 500;
+  border-radius: 24px;
+  transition: 0.25s;
+}
+
+.btn-nav1 {
+  background: #C89F8A;
+  color: white;
+  padding: 10px 22px;
+}
+
+.btn-nav1:hover {
+  background: #b8937f;
+}
+
+.btn-nav2 {
+  border: 2px solid #C89F8A;
+  color: #C89F8A;
+  padding: 8px 22px;
+}
+
+.btn-nav2:hover {
+  background: #C89F8A;
+  color: white;
+}
+
+
+/* ===============================
+   APP LAYOUT
+================================ */
+
+#app {
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow-x: hidden;
+}
+
+.app-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.page-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+
+/* ===============================
+   SCREEN CENTER
+================================ */
+
+.screen-center {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+  min-width: 0;
+}
+
+
+/* ===============================
+   MOBILE FRAME
+================================ */
+
+.mobile-frame {
+  width: 100%;
+  max-width: 390px;
+  margin-inline: auto;
+  overflow: hidden;
+}
+
+
+/* ===============================
+   MAIN CONTAINER
+================================ */
+
+.screen-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 20px;
+  min-width: 0;
+}
+
+
+/* ===============================
+   FOOTER
+================================ */
+
+.footer {
+  width: 100%;
+  max-width: 100%;
+  background: #2C1810;
+  color: #C89F8A;
   text-align: center;
-  padding: 40px;
-  color: #6b5d54;
+  padding: 40px 20px;
+  font-size: 14px;
+  margin-top: auto;
+}
+
+
+/* ===============================
+   TABLET
+================================ */
+
+@media (max-width: 768px) {
+
+  .navbar {
+    height: 64px;
+  }
+
+  .nav-container {
+    padding-inline: 18px;
+  }
+
+  .logo-img {
+    height: 36px;
+  }
+}
+
+
+/* ===============================
+   SMALL MOBILE
+================================ */
+
+@media (max-width: 480px) {
+
+  .screen-center {
+    padding: 16px;
+  }
+
+  .screen-container {
+    padding-inline: 16px;
+  }
+
+  .logo-img {
+    height: 32px;
+  }
 }
