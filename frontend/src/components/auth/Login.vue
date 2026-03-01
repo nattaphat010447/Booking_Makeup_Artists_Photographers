@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { auth } from '../../config/firebase';
+import { auth, db } from '../../config/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 const email = ref('');
 const password = ref('');
@@ -12,9 +13,26 @@ const router = useRouter(); // <--- นำเข้า router
 const handleLogin = async () => {
   isLoading.value = true;
   try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    router.push('/search'); // <--- เด้งไปหน้าค้นหาช่าง (แบบล็อคอินแล้ว)
+    const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+
+      if (userData.role === 'provider') {
+        router.push('/chats');
+      } else {
+        router.push('/search');
+      }
+    } else {
+      router.push('/search');
+    }
+
   } catch (error: any) {
+    console.error(error);
     alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
   } finally {
     isLoading.value = false;

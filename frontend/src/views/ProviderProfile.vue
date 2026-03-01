@@ -325,14 +325,23 @@ const deleteReview = async () => {
             <div class="rating-select">
               <label>ให้คะแนน: </label>
               <select v-model="reviewForm.rating">
-                <option :value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-                <option :value="4">⭐⭐⭐⭐ (4/5)</option>
-                <option :value="3">⭐⭐⭐ (3/5)</option>
-                <option :value="2">⭐⭐ (2/5)</option>
-                <option :value="1">⭐ (1/5)</option>
+                <option :value="5">⭐⭐⭐⭐⭐</option>
+                <option :value="4">⭐⭐⭐⭐</option>
+                <option :value="3">⭐⭐⭐</option>
+                <option :value="2">⭐⭐</option>
+                <option :value="1">⭐</option>
               </select>
             </div>
-            <textarea v-model="reviewForm.comment" rows="3" placeholder="ความประทับใจต่องานนี้..."></textarea>
+            
+            <textarea 
+              v-model="reviewForm.comment" 
+              rows="3" 
+              placeholder="เขียนรีวิวของคุณ..."
+              maxlength="150"
+            ></textarea>
+            
+            <div class="char-counter">{{ reviewForm.comment.length }}/150</div>
+            
             <div class="form-actions">
               <button class="btn-cancel" @click="isEditingReview = false">ยกเลิก</button>
               <button class="btn-submit-review" @click="saveEditedReview" :disabled="isSubmittingReview">
@@ -358,17 +367,27 @@ const deleteReview = async () => {
 
         <div v-else-if="canReview" class="review-form-box">
           <h4>เขียนรีวิวของคุณ</h4>
+          
           <div class="rating-select">
             <label>ให้คะแนน: </label>
             <select v-model="reviewForm.rating">
-              <option :value="5">⭐⭐⭐⭐⭐ (5/5)</option>
-              <option :value="4">⭐⭐⭐⭐ (4/5)</option>
-              <option :value="3">⭐⭐⭐ (3/5)</option>
-              <option :value="2">⭐⭐ (2/5)</option>
-              <option :value="1">⭐ (1/5)</option>
+              <option :value="5">⭐⭐⭐⭐⭐</option>
+              <option :value="4">⭐⭐⭐⭐</option>
+              <option :value="3">⭐⭐⭐</option>
+              <option :value="2">⭐⭐</option>
+              <option :value="1">⭐</option>
             </select>
           </div>
-          <textarea v-model="reviewForm.comment" rows="3" placeholder="ความประทับใจต่องานนี้..."></textarea>
+
+          <textarea 
+            v-model="reviewForm.comment" 
+            rows="3" 
+            placeholder="เขียนรีวิวของคุณ..."
+            maxlength="150"
+          ></textarea>
+          
+          <div class="char-counter">{{ reviewForm.comment.length }}/150</div>
+
           <button class="btn-submit-review" @click="submitReview" :disabled="isSubmittingReview">
             {{ isSubmittingReview ? 'กำลังส่งรีวิว...' : 'ส่งรีวิว' }}
           </button>

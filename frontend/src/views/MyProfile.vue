@@ -50,7 +50,6 @@ onMounted(() => {
       email.value = user.email || '';
       await fetchUserData(user.uid);
     } else {
-      alert('กรุณาเข้าสู่ระบบก่อน');
       router.push('/login');
     }
   });
