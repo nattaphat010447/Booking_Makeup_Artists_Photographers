@@ -1,0 +1,302 @@
+/* ===============================
+   PROVIDER PROFILE PAGE
+================================ */
+.gallery-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-image {
+  width: 100%;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.thumbnail-list {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 16px 20px;
+  background: #FAFAFA;
+}
+
+.thumbnail {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.thumbnail.active, .thumbnail:hover {
+  opacity: 1;
+  border: 2px solid #C89F8A;
+  transform: scale(1.05);
+}
+
+.details-section {
+  padding: 24px 20px;
+  background: #FFFFFF;
+  border-bottom: 8px solid #FAFAFA;
+}
+
+.specialty {
+  margin: 0 0 12px 0;
+  font-size: 24px;
+  color: #3b2b26;
+  font-weight: 700;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  color: #6b5a50;
+  font-size: 14px;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.price {
+  font-size: 18px;
+  font-weight: 600;
+  color: #C89F8A;
+  margin-bottom: 24px;
+}
+
+.bio-box {
+  background: #faf8f5;
+  padding: 18px;
+  border-radius: 16px;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 28px;
+  line-height: 1.7;
+  border: 1px solid #f0ebe6;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.profile-row .avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.name-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.name-info .name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #3b2b26;
+}
+
+.name-info .role {
+  font-size: 14px;
+  color: #8B7355;
+}
+
+.chat-btn {
+  width: 100%;
+  padding: 16px;
+  background: #3b2b26;
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.2s;
+}
+
+.chat-btn:hover { background: #2a1e1b; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59, 43, 38, 0.2);}
+
+/* Reviews Section */
+.reviews-section {
+  padding: 24px 20px;
+  background: #FFFFFF;
+}
+
+.reviews-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #3b2b26;
+  font-weight: 700;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #888;
+  padding: 30px 0;
+  font-size: 15px;
+  background: #faf8f5;
+  border-radius: 12px;
+}
+
+/* My Review & Form Box */
+.my-review-box, .review-form-box {
+  background: #faf8f5;
+  padding: 10px;
+  border-radius: 16px;
+  border: 1px solid #eaddd3;
+  margin-bottom: 24px;
+}
+
+.box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.box-header h4, .review-form-box h4 {
+  margin: 0;
+  color: #C89F8A;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.action-links {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.link-edit { color: #C89F8A; cursor: pointer; }
+.link-delete { color: #d32f2f; cursor: pointer; }
+
+.rating-select { margin-bottom: 16px; font-size: 14px; color: #555; font-weight: 500;}
+.rating-select select { padding: 8px 12px; border-radius: 8px; border: 1px solid #e0d8d0; margin-left: 10px; font-family: inherit; background: #fff;}
+
+.review-form-box textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e0d8d0;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+  font-family: inherit;
+  resize: vertical;
+  font-size: 14px;
+}
+
+.form-actions { display: flex; gap: 12px; }
+.btn-cancel { flex: 1; background: #eaddd3; color: #3b2b26; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-family: inherit;}
+.btn-submit-review { flex: 2; background: #C89F8A; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; cursor: pointer; font-family: inherit;}
+
+/* Review Cards */
+.review-card {
+  padding: 10px 15px;
+  border: 2px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.highlight-mine { 
+  border: none !important; 
+  background: transparent !important; 
+  padding: 0 0 16px 0 !important; 
+  margin-bottom: 0 !important; 
+}
+
+/* ส่วนหัว (รูป+ชื่อ) ให้อยู่ชิดซ้ายปกติ */
+.rev-header { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  margin-bottom: 16px; 
+}
+.rev-avatar { 
+  width: 44px; 
+  height: 44px; 
+  border-radius: 50%; 
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.rev-name { 
+  display: flex; 
+  flex-direction: column; 
+  font-size: 15px; 
+  font-weight: 600; 
+  text-align: left;
+  color: #3b2b26;
+}
+.stars { font-size: 12px; margin-top: 2px;}
+
+/*ส่วนข้อความคอมเมนต์ */
+.rev-comment { 
+  font-size: 14.5px; 
+  color: #555; 
+  margin: 0; 
+  line-height: 1.6;
+  text-align: left;
+  font-style: italic;
+  border-left: 3px solid #C89F8A;
+  padding-left: 12px;
+  padding-right: 12px;
+
+  /*เพิ่ม 3 บรรทัดนี้ เพื่อบังคับตัดคำขั้นเด็ดขาด ไม่ให้ทะลุกรอบ 100% */
+  width: 100%;
+  word-wrap: break-word;
+  word-break: break-all;
+}
+
+.char-counter {
+  text-align: right;
+  font-size: 12px;
+  color: #999;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  padding-right: 5px;
+}
+
+.edited-timestamp { 
+  display: block; 
+  margin-top: 10px; 
+  font-size: 11px; 
+  color: #a39c97; 
+  font-style: italic; 
+  text-align: right;         /* จัดชิดขวา */
+  padding-right: 15px;       /* ให้แนวตรงกับข้อความด้านบนพอดี */
+}
+
+/* Modals */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px);}
+.modal-box { background: white; padding: 32px 24px; border-radius: 24px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.1);}
+.modal-box h3 { font-size: 18px; margin-top: 0; margin-bottom: 24px; line-height: 1.5; color: #3b2b26;}
+.modal-actions { display: flex; gap: 12px; margin-bottom: 16px; }
+
+.ionic-primary-btn, .btn-send {
+  --background: #C89F8A; 
+
+  --background-hover: #b8937f; 
+  --background-hover-opacity: 1;
+  
+  --background-activated: #a6816e; 
+  --background-activated-opacity: 1;
+
+  --background-focused: #b8937f; 
+  --background-focused-opacity: 1;
+}
+
+.button-solid {
+  --box-shadow: disable;
+}

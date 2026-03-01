@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory } from '@ionic/vue-router';
 
 import HomeView from '../views/HomeView.vue';
 import Login from '../components/auth/Login.vue';
@@ -9,6 +9,7 @@ const ChatList = () => import('../views/ChatList.vue');
 const ChatRoom = () => import('../views/ChatRoom.vue');
 const MyProfile = () => import('../views/MyProfile.vue');
 const NotificationList = () => import('../views/NotificationList.vue');
+const AdminDashboard = () => import('../views/AdminDashboard.vue');
 
 const routes = [
   { path: '/', component: HomeView },
@@ -20,10 +21,11 @@ const routes = [
   { path: '/chat/:id', component: ChatRoom }, 
   { path: '/profile', component: MyProfile },
   { path: '/notifications', component: NotificationList },
+  { path: '/admin', component: AdminDashboard },
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 });
 

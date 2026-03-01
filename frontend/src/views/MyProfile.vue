@@ -5,6 +5,7 @@ import Navbar from '../components/layout/Navbar.vue';
 import { auth, db } from '../config/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, updatePassword } from 'firebase/auth';
+import { IonPage, IonContent, IonInput, IonSelect, IonSelectOption, IonTextarea, IonButton, IonSpinner } from '@ionic/vue';
 
 const router = useRouter();
 
@@ -38,7 +39,7 @@ const soldCount = ref(0);
 const portfolioPreviews = ref<(string | null)[]>([null, null, null, null, null, null]);
 const newPortfolioImages = ref<(File | null)[]>([null, null, null, null, null, null]);
 
-const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'เทศบาลตำบลอุโมงค์', 'นครราชสีมา', 'กรุงเทพมหานคร'];
+const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'กรุงเทพมหานคร'];
 
 // ================= Functions =================
 
@@ -49,7 +50,6 @@ onMounted(() => {
       email.value = user.email || '';
       await fetchUserData(user.uid);
     } else {
-      alert('กรุณาเข้าสู่ระบบก่อน');
       router.push('/login');
     }
   });
@@ -66,7 +66,6 @@ const fetchUserData = async (userId: string) => {
       phone.value = data.phone;
       if (data.profile_image) profilePreview.value = data.profile_image;
 
-      // ถ้าเป็นช่าง ให้ดึงข้อมูล provider มาแสดงด้วย
       if (data.role === 'provider' && data.provider_info) {
         const info = data.provider_info;
         specialty.value = info.specialty || '';
@@ -74,7 +73,6 @@ const fetchUserData = async (userId: string) => {
         location.value = info.location || '';
         priceStart.value = info.price_start || 0;
         
-        // 💡 เก็บค่าเดิมไว้
         serviceType.value = info.service_type || 'makeup';
         ratingAvg.value = info.rating_avg || 0;
         soldCount.value = info.sold_count || 0;
@@ -191,96 +189,154 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div class="page-container">
+  <ion-page>
     <Navbar />
 
-    <div v-if="isLoading" class="loading">กำลังโหลดข้อมูลของคุณ...</div>
-
-    <div v-else class="profile-editor">
-      <h2>จัดการโปรไฟล์</h2>
-
-      <form @submit.prevent="handleSave">
-        <div class="section-card">
-          <h3>ข้อมูลส่วนตัว</h3>
-          
-          <div class="profile-upload">
-            <div class="preview-box">
-              <img :src="profilePreview" alt="Profile" class="img-preview" />
-            </div>
-            <label class="btn-change-img">
-              เปลี่ยนรูปภาพ
-              <input type="file" accept="image/*" class="hidden" @change="handleProfileImage" :disabled="isSaving" />
-            </label>
-          </div>
-
-          <div class="input-group">
-            <label>อีเมล:</label>
-            <input type="email" :value="email" disabled class="disabled-input" />
-          </div>
-
-          <div class="input-group">
-            <label>ชื่อ-นามสกุล:</label>
-            <input v-model="fullName" type="text" required :disabled="isSaving" />
-          </div>
-
-          <div class="input-group">
-            <label>เบอร์โทรศัพท์:</label>
-            <input v-model="phone" type="text" required :disabled="isSaving" />
-          </div>
-
-          <div class="input-group">
-            <label>เปลี่ยนรหัสผ่านใหม่ (เว้นว่างไว้หากไม่ต้องการเปลี่ยน):</label>
-            <input v-model="newPassword" type="password" placeholder="รหัสผ่านใหม่" minlength="6" :disabled="isSaving" />
-            <small class="hint">* การเปลี่ยนรหัสผ่านอาจจะต้องทำการ Login ใหม่อีกครั้ง</small>
-          </div>
+    <ion-content class="custom-content">
+      <div class="page-container">
+        
+        <div v-if="isLoading" class="loading">
+          <ion-spinner name="crescent" color="medium"></ion-spinner>
+          <p>กำลังโหลดข้อมูลของคุณ...</p>
         </div>
 
-        <div v-if="role === 'provider'" class="section-card">
-          <h3>ข้อมูลผู้ให้บริการ (Portfolio & Bio)</h3>
+        <div v-else class="profile-editor">
+          <h2>จัดการโปรไฟล์</h2>
 
-          <div class="input-group">
-            <label>ประเภทงานที่รับ:</label>
-            <input v-model="specialty" type="text" placeholder="เช่น Cosplay Makeup..." :disabled="isSaving" />
-          </div>
-
-          <div class="input-group">
-            <label>ราคาเริ่มต้น (บาท):</label>
-            <input v-model="priceStart" type="number" min="0" required :disabled="isSaving" />
-          </div>
-
-          <div class="input-group">
-            <label>จังหวัดที่รับงาน:</label>
-            <select v-model="location" required :disabled="isSaving">
-              <option value="" disabled>-- เลือกจังหวัด --</option>
-              <option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Bio (แนะนำตัว):</label>
-            <textarea v-model="bio" rows="4" :disabled="isSaving"></textarea>
-          </div>
-
-          <div class="input-group">
-            <label>แก้ไขรูปผลงาน (Portfolio):</label>
-            <div class="portfolio-grid">
-              <div v-for="index in 6" :key="index" class="portfolio-item">
-                <label :for="'edit-portfolio-' + index" class="upload-area">
-                  <img v-if="portfolioPreviews[index-1]" :src="portfolioPreviews[index-1]!" class="img-preview" />
-                  <span v-else>+</span>
+          <form @submit.prevent="handleSave">
+            
+            <div class="section-card">
+              <h3>ข้อมูลส่วนตัว</h3>
+              
+              <div class="profile-upload">
+                <div class="preview-box">
+                  <img :src="profilePreview" alt="Profile" class="img-preview" />
+                </div>
+                <label class="btn-change-img">
+                  เปลี่ยนรูปภาพ
+                  <input type="file" accept="image/*" class="hidden" @change="handleProfileImage" :disabled="isSaving" />
                 </label>
-                <input :id="'edit-portfolio-' + index" type="file" accept="image/*" class="hidden" @change="(e) => handlePortfolioImage(e, index-1)" :disabled="isSaving" />
+              </div>
+
+              <div class="input-group">
+                <label>อีเมล:</label>
+                <ion-input type="email" :value="email" disabled class="custom-ion-input disabled-input"></ion-input>
+              </div>
+
+              <div class="input-group">
+                <label>ชื่อ-นามสกุล:</label>
+                <ion-input v-model="fullName" type="text" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+              </div>
+
+              <div class="input-group">
+                <label>เบอร์โทรศัพท์:</label>
+                <ion-input v-model="phone" type="tel" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+              </div>
+
+              <div class="input-group">
+                <label>เปลี่ยนรหัสผ่านใหม่:</label>
+                <ion-input v-model="newPassword" type="password" placeholder="รหัสผ่านใหม่ (ไม่บังคับ)" class="custom-ion-input" minlength="6" :disabled="isSaving"></ion-input>
+                <small class="hint">* การเปลี่ยนรหัสผ่านอาจจะต้องทำการ Login ใหม่อีกครั้ง</small>
               </div>
             </div>
-            <small class="hint">คลิกที่รูปเพื่ออัปโหลดทับรูปเดิม</small>
-          </div>
+
+            <div v-if="role === 'provider'" class="section-card">
+              <h3>ข้อมูลผู้ให้บริการ (Portfolio & Bio)</h3>
+
+              <div class="input-group">
+                <label>ประเภทงานที่รับ:</label>
+                <ion-input v-model="specialty" type="text" placeholder="เช่น Cosplay Makeup..." class="custom-ion-input" :disabled="isSaving"></ion-input>
+              </div>
+
+              <div class="input-group">
+                <label>ราคาเริ่มต้น (บาท):</label>
+                <ion-input v-model="priceStart" type="number" min="0" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+              </div>
+
+              <div class="input-group">
+                <label>จังหวัดที่รับงาน:</label>
+                <ion-select v-model="location" class="custom-ion-select" interface="popover" required :disabled="isSaving">
+                  <ion-select-option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</ion-select-option>
+                </ion-select>
+              </div>
+
+              <div class="input-group">
+                <label>Bio (แนะนำตัว):</label>
+                <ion-textarea v-model="bio" rows="4" class="custom-ion-textarea" :disabled="isSaving"></ion-textarea>
+              </div>
+
+              <div class="input-group">
+                <label>แก้ไขรูปผลงาน (Portfolio):</label>
+                <div class="portfolio-grid">
+                  <div v-for="index in 6" :key="index" class="portfolio-item">
+                    <label :for="'edit-portfolio-' + index" class="upload-area">
+                      <img v-if="portfolioPreviews[index-1]" :src="portfolioPreviews[index-1]!" class="img-preview" />
+                      <span v-else>+</span>
+                    </label>
+                    <input :id="'edit-portfolio-' + index" type="file" accept="image/*" class="hidden" @change="(e) => handlePortfolioImage(e, index-1)" :disabled="isSaving" />
+                  </div>
+                </div>
+                <small class="hint">คลิกที่รูปเพื่ออัปโหลดทับรูปเดิม</small>
+              </div>
+            </div>
+
+            <ion-button type="submit" expand="block" class="ionic-primary-btn" :disabled="isSaving" style="--background: #C89F8A;">
+              <div v-if="isSaving" style="display: flex; align-items: center; gap: 8px;">
+                <ion-spinner name="crescent"></ion-spinner>
+                <span>{{ saveMessage }}</span>
+              </div>
+              <span v-else>บันทึกการเปลี่ยนแปลง</span>
+            </ion-button>
+          </form>
         </div>
 
-        <button type="submit" class="btn-save" :disabled="isSaving">
-          {{ isSaving ? saveMessage : 'บันทึกการเปลี่ยนแปลง' }}
-        </button>
-      </form>
-    </div>
-  </div>
+      </div>
+    </ion-content>
+  </ion-page>
 </template>
 
+<style scoped>
+.page-container { min-height: 100%; background: #FAFAFA; padding-bottom: 40px; }
+.custom-content { --background: #FAFAFA; }
+.loading { text-align: center; padding: 60px 20px; color: #888; }
+
+.profile-editor { padding: 30px 20px; max-width: 600px; margin: 0 auto; width: 100%; }
+.profile-editor h2 { margin-top: 0; margin-bottom: 24px; color: #3b2b26; text-align: center; font-size: 26px; font-weight: 700;}
+
+.section-card { background: #FFFFFF; padding: 28px 24px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 24px; border: 1px solid rgba(0,0,0,0.04); }
+.section-card h3 { margin-top: 0; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 16px; margin-bottom: 24px; font-size: 18px; color: #C89F8A; font-weight: 700;}
+
+.profile-upload { display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; }
+.preview-box { width: 120px; height: 120px; border-radius: 50%; overflow: hidden; border: 4px solid #f4efe9; margin-bottom: 16px; }
+.img-preview { width: 100%; height: 100%; object-fit: cover; }
+.btn-change-img { background: #3b2b26; color: white; padding: 8px 20px; border-radius: 24px; font-size: 13px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+.hidden { display: none; }
+
+.input-group { margin-bottom: 20px; text-align: left; }
+.input-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #444; }
+
+.custom-ion-input, .custom-ion-select, .custom-ion-textarea {
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  --background: #faf8f5;
+  border: 1px solid #e0d8d0;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.custom-ion-input.ion-focused, .custom-ion-select.ion-focused, .custom-ion-textarea.ion-focused {
+  border-color: #C89F8A;
+}
+
+.disabled-input { --background: #f0ebe6; opacity: 0.7; }
+.hint { font-size: 12px; color: #C89F8A; margin-top: 8px; display: block; }
+
+.portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }
+.upload-area { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; border: 2px dashed #e0d8d0; border-radius: 14px; cursor: pointer; overflow: hidden; background: #faf8f5; transition: 0.2s; font-size: 24px; color: #ccc; }
+.upload-area:hover { border-color: #C89F8A; color: #C89F8A; }
+
+.ionic-primary-btn { margin-top: 20px; height: 56px; --border-radius: 14px; font-weight: 600; font-size: 16px; font-family: inherit; }
+</style>
