@@ -57,7 +57,7 @@ const handleSignOut = async () => {
 <template>
   <nav class="navbar">
     <div class="nav-logo">
-          <router-link to="/">
+          <router-link to="/search">
             <img src="/images/Bookibooki.png" alt="Booki Booki Logo" class="logo-img" />
           </router-link>
         </div>
