@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { db } from '../config/firebase';
@@ -111,6 +111,46 @@ const filteredProviders = computed(() => {
   });
 });
 
+// ================= Pagination (แบ่งหน้า) =================
+const currentPage = ref(1);
+const itemsPerPage = 10; // แสดงหน้าละ 10 คน
+const providerListRef = ref<HTMLElement | null>(null);
+
+watch(filteredProviders, () => {
+  currentPage.value = 1;
+});
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredProviders.value.length / itemsPerPage) || 1;
+});
+
+const paginatedProviders = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredProviders.value.slice(start, end);
+});
+
+const scrollToTop = () => {
+  if (providerListRef.value) {
+    // เลื่อนจอขึ้นไปตรงจุดที่ตั้งอ้างอิงไว้
+    providerListRef.value.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    scrollToTop();
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    scrollToTop();
+  }
+};
+
 onMounted(() => {
   if (route.query.role) {
     selectedRoles.value = [route.query.role as string];
@@ -140,7 +180,7 @@ onUnmounted(() => {
               class="custom-search-input">
             </ion-input>
             
-            <ion-button class="filter-toggle" @click="showFilter = !showFilter" style="--background: #3b2b26; --border-radius: 12px; margin: 0; height: 48px;">
+            <ion-button class="filter-toggle" @click="showFilter = !showFilter" style="--background: #3b2b2600; --border-radius: 12px; margin: 0; height: 48px;">
               Filter
             </ion-button>
           </div>
@@ -189,14 +229,14 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div class="provider-list">
+        <div class="provider-list" ref="providerListRef">
           <div v-if="isLoading" class="loading">
              <ion-spinner name="crescent" color="medium"></ion-spinner>
              <p style="margin-top: 10px;">กำลังโหลดข้อมูล...</p>
           </div>
           <div v-else-if="filteredProviders.length === 0" class="empty">ไม่พบช่างที่ตรงกับเงื่อนไข</div>
           
-          <div v-for="provider in filteredProviders" :key="provider.id" class="provider-card" @click="router.push(`/provider/${provider.id}`)">
+          <div v-for="provider in paginatedProviders" :key="provider.id" class="provider-card" @click="router.push(`/provider/${provider.id}`)">
             <img :src="provider.provider_info?.portfolios?.[0] || 'https://via.placeholder.com/390x200'" class="cover-img" />
             
             <div class="card-body">
@@ -219,6 +259,13 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
+
+          <div v-if="totalPages > 1" class="pagination-wrapper">
+            <button class="page-btn" @click="prevPage" :disabled="currentPage === 1">&lt;</button>
+            <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+            <button class="page-btn" @click="nextPage" :disabled="currentPage === totalPages">&gt;</button>
+          </div>
+
         </div>
 
       </div>
@@ -227,7 +274,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* 💡 ปรับแต่ง ion-input ให้สวยงามตามดีไซน์เดิมของคุณ */
 .custom-search-input {
   --padding-start: 18px;
   --padding-end: 18px;
@@ -242,7 +288,54 @@ onUnmounted(() => {
 }
 .custom-search-input.ion-focused {
   border-color: #C89F8A;
-  --background: #fff;
   box-shadow: 0 0 0 3px rgba(200, 159, 138, 0.15);
+}
+
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 10px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.page-btn {
+  background: #C89F8A;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(200, 159, 138, 0.3);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #b8937f;
+  transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+  background: #e0d8d0;
+  color: #a39c97;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.page-info {
+  font-size: 16px;
+  font-weight: 700;
+  color: #3b2b26;
+  min-width: 60px;
+  text-align: center;
 }
 </style>

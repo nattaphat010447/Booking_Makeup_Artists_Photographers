@@ -137,7 +137,6 @@ const handleRegister = async () => {
 
     await setDoc(doc(db, 'users', user.uid), userData);
 
-    alert('สมัครสมาชิกสำเร็จ!');
     router.push('/login');
     
   } catch (error: any) {

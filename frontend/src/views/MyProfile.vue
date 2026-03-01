@@ -329,7 +329,6 @@ const handleSave = async () => {
 
 .custom-ion-input.ion-focused, .custom-ion-select.ion-focused, .custom-ion-textarea.ion-focused {
   border-color: #C89F8A;
-  --background: #fff;
 }
 
 .disabled-input { --background: #f0ebe6; opacity: 0.7; }

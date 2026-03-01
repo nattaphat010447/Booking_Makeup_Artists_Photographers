@@ -13,6 +13,7 @@ const isLoading = ref(false);
 const router = useRouter();
 
 const handleLogin = async () => {
+  (document.activeElement as HTMLElement)?.blur();
   isLoading.value = true;
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
@@ -22,7 +23,10 @@ const handleLogin = async () => {
 
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
-      if (userData.role === 'provider') {
+      
+      if (userData.role === 'admin') {
+        router.push('/admin');
+      } else if (userData.role === 'provider') {
         router.push('/chats');
       } else {
         router.push('/search');

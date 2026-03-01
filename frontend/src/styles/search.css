@@ -267,9 +267,7 @@
 
 .btn-clear {
   flex: 1;
-  padding: 14px;
   background: transparent;
-  border: 1.5px solid #C89F8A;
   color: #C89F8A;
   border-radius: 12px;
   font-weight: 600;
@@ -284,7 +282,6 @@
 
 .btn-apply {
   flex: 1;
-  padding: 14px;
   background: #C89F8A;
   color: white;
   border: none;
@@ -403,4 +400,17 @@
   padding: 60px 20px;
   color: #888;
   font-size: 16px;
+}
+
+.ionic-primary-btn, .btn-send {
+  --background: #C89F8A; 
+
+  --background-hover: #b8937f; 
+  --background-hover-opacity: 1;
+  
+  --background-activated: #a6816e; 
+  --background-activated-opacity: 1;
+
+  --background-focused: #b8937f; 
+  --background-focused-opacity: 1;
 }

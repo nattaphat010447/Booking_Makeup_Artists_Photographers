@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { db, auth } from '../config/firebase';
@@ -31,6 +31,9 @@ const reviewForm = ref({
   rating: 5,
   comment: ''
 });
+
+const currentPage = ref(1);
+const itemsPerPage = 5;
 
 // ================= Functions =================
 onMounted(() => {
@@ -80,6 +83,7 @@ const fetchProvider = async () => {
     }
   } catch (error) { console.error(error); } finally { isLoading.value = false; }
 };
+
 
 const fetchReviews = async () => {
   try {
@@ -133,7 +137,6 @@ const submitReview = async () => {
     });
     
     await updateProviderRating();
-    alert('ขอบคุณสำหรับรีวิวครับ!');
     reviewForm.value.comment = ''; canReview.value = false; 
     await fetchReviews(); await fetchProvider();
   } catch (error) { alert('เกิดข้อผิดพลาดในการส่งรีวิว'); } 
@@ -171,25 +174,78 @@ const deleteReview = async () => {
     await checkCanReview(currentUser.value.uid); await fetchReviews(); await fetchProvider();
   } catch (error) { alert('เกิดข้อผิดพลาดในการลบรีวิว'); }
 };
+
+const totalPages = computed(() => {
+  return Math.ceil(reviews.value.length / itemsPerPage) || 1;
+});
+
+const paginatedReviews = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return reviews.value.slice(start, end);
+});
+
+const reviewsSectionRef = ref<HTMLElement | null>(null); // สำหรับเลื่อนจอขึ้นไปบนสุดของคอมเมนต์
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    scrollToReviews();
+  }
+};
+
+const prevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--;
+    scrollToReviews();
+  }
+};
+
+const scrollToReviews = () => {
+  if (reviewsSectionRef.value) {
+    reviewsSectionRef.value.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
+const deleteReviewByAdmin = async (reviewId: string) => {
+  if (!confirm('🚨 ยืนยันการลบรีวิวนี้ด้วยสิทธิ์แอดมิน?')) return;
+  try {
+    await deleteDoc(doc(db, 'reviews', reviewId));
+    await updateProviderRating();
+    alert('แอดมินลบรีวิวสำเร็จ');
+    await fetchReviews(); 
+    await fetchProvider();
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    alert('เกิดข้อผิดพลาดในการลบรีวิว');
+  }
+};
 </script>
 
 <template>
   <ion-page>
     <Navbar />
 
-    <ion-content>
+    <ion-content class="custom-content">
       <div class="page-container">
+        
         <div v-if="isLoading" class="loading">
-           <ion-spinner name="crescent"></ion-spinner>
-           <p>กำลังโหลดข้อมูลช่าง...</p>
+          <ion-spinner name="crescent" color="medium"></ion-spinner>
+          <p>กำลังโหลดข้อมูลช่าง...</p>
         </div>
         
         <div v-else-if="provider" class="content">
           <div class="gallery-section">
             <img :src="mainImage || 'https://via.placeholder.com/390x350'" class="main-image" />
             <div class="thumbnail-list">
-              <img v-for="(img, idx) in provider.provider_info?.portfolios" :key="idx" :src="img" 
-                class="thumbnail" :class="{ active: mainImage === img }" @click="mainImage = img" />
+              <img 
+                v-for="(img, idx) in provider.provider_info?.portfolios" 
+                :key="idx" 
+                :src="img" 
+                class="thumbnail" 
+                :class="{ active: mainImage === img }"
+                @click="mainImage = img"
+              />
             </div>
           </div>
 
@@ -199,7 +255,9 @@ const deleteReview = async () => {
               <span>💼 Sold {{ provider.provider_info?.sold_count || 0 }} ครั้ง</span>
               <span>⭐ {{ provider.provider_info?.rating_avg || '0.0' }}</span>
             </div>
-            <div class="price">เริ่มต้นที่ {{ provider.provider_info?.price_start || 0 }} บาท</div>
+            <div class="price">
+              เริ่มต้นที่ {{ provider.provider_info?.price_start || 0 }} บาท
+            </div>
             
             <div class="bio-box">
               <p>{{ provider.provider_info?.bio || 'ช่างยังไม่ได้เพิ่มคำแนะนำตัว...' }}</p>
@@ -213,12 +271,16 @@ const deleteReview = async () => {
               </div>
             </div>
 
-            <ion-button v-if="currentUserRole !== 'provider'" @click="handleChatClick" expand="block" style="--background: #3b2b26; --border-radius: 14px; height: 56px; font-weight: bold; font-size: 16px;">
-              คุยกับ Service Provider
+            <ion-button 
+              v-if="currentUserRole === 'customer'" 
+              @click="handleChatClick" 
+              expand="block" 
+              style="--background: #3b2b26; --border-radius: 14px; height: 56px; font-weight: bold; font-size: 16px;">
+              💬 คุยกับ Service Provider
             </ion-button>
           </div>
 
-          <div class="reviews-section">
+          <div class="reviews-section" ref="reviewsSectionRef">
             <h3>รีวิวจากลูกค้า ({{ reviews.length }})</h3>
 
             <div v-if="hasReviewed && myReview" class="my-review-box">
@@ -242,9 +304,16 @@ const deleteReview = async () => {
                   </select>
                 </div>
                 
-                <ion-textarea v-model="reviewForm.comment" rows="3" placeholder="ความประทับใจต่องานนี้..." maxlength="150" class="custom-ion-textarea"></ion-textarea>
+                <ion-textarea 
+                  v-model="reviewForm.comment" 
+                  rows="3" 
+                  placeholder="เขียนรีวิวของคุณ..."
+                  maxlength="150"
+                  class="custom-ion-textarea"
+                ></ion-textarea>
+                
                 <div class="char-counter">{{ reviewForm.comment.length }}/150</div>
-
+                
                 <div class="form-actions">
                   <ion-button fill="outline" class="btn-cancel" @click="isEditingReview = false" style="--color: #3b2b26; --border-color: #eaddd3; margin: 0; flex: 1;">ยกเลิก</ion-button>
                   <ion-button class="btn-submit-review" @click="saveEditedReview" :disabled="isSubmittingReview" style="--background: #C89F8A; margin: 0; flex: 2;">
@@ -263,12 +332,15 @@ const deleteReview = async () => {
                   </div>
                 </div>
                 <p class="rev-comment">"{{ myReview.comment }}"</p>
-                <small v-if="myReview.updatedAt" class="edited-timestamp">แก้ไขแล้ว {{ formatEditedTime(myReview.updatedAt) }}</small>
+                <small v-if="myReview.updatedAt" class="edited-timestamp">
+                  แก้ไขแล้ว {{ formatEditedTime(myReview.updatedAt) }}
+                </small>
               </div>
             </div>
 
             <div v-else-if="canReview" class="review-form-box">
               <h4>เขียนรีวิวของคุณ</h4>
+              
               <div class="rating-select">
                 <label>ให้คะแนน: </label>
                 <select v-model="reviewForm.rating">
@@ -279,8 +351,15 @@ const deleteReview = async () => {
                   <option :value="1">⭐</option>
                 </select>
               </div>
+
+              <ion-textarea 
+                v-model="reviewForm.comment" 
+                rows="3" 
+                placeholder="เขียนรีวิวของคุณ..."
+                maxlength="150"
+                class="custom-ion-textarea"
+              ></ion-textarea>
               
-              <ion-textarea v-model="reviewForm.comment" rows="3" placeholder="ความประทับใจต่องานนี้..." maxlength="150" class="custom-ion-textarea"></ion-textarea>
               <div class="char-counter">{{ reviewForm.comment.length }}/150</div>
 
               <ion-button expand="block" @click="submitReview" :disabled="isSubmittingReview" style="--background: #C89F8A; --border-radius: 12px; height: 48px; font-weight: bold;">
@@ -291,16 +370,45 @@ const deleteReview = async () => {
 
             <div v-if="reviews.length === 0" class="no-reviews">ยังไม่มีรีวิวสำหรับช่างท่านนี้</div>
 
-            <div v-for="rev in reviews" :key="rev.id" class="review-card">
-              <div class="rev-header">
-                <img :src="rev.customerProfile" class="rev-avatar" />
-                <div class="rev-name">
-                  <span>{{ rev.customerName }}</span>
-                  <span class="stars">{{ '⭐'.repeat(rev.rating) }}</span>
+            <div v-for="rev in paginatedReviews" :key="rev.id" class="review-card">
+              <div class="rev-header" style="justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <img :src="rev.customerProfile" class="rev-avatar" />
+                  <div class="rev-name">
+                    <span>{{ rev.customerName }}</span>
+                    <span class="stars">{{ '⭐'.repeat(rev.rating) }}</span>
+                  </div>
                 </div>
+                
+                <button v-if="currentUserRole === 'admin'" class="btn-delete-admin" @click="deleteReviewByAdmin(rev.id)">
+                  ลบ
+                </button>
               </div>
+
               <p class="rev-comment">"{{ rev.comment }}"</p>
-              <small v-if="rev.updatedAt" class="edited-timestamp">แก้ไขแล้ว {{ formatEditedTime(rev.updatedAt) }}</small>
+              <small v-if="rev.updatedAt" class="edited-timestamp">
+                แก้ไขแล้ว {{ formatEditedTime(rev.updatedAt) }}
+              </small>
+            </div>
+
+            <div v-if="totalPages > 1" class="pagination-wrapper">
+              <button 
+                class="page-btn" 
+                @click="prevPage" 
+                :disabled="currentPage === 1"
+              >
+                &lt;
+              </button>
+              
+              <span class="page-info">{{ currentPage }} / {{ totalPages }}</span>
+              
+              <button 
+                class="page-btn" 
+                @click="nextPage" 
+                :disabled="currentPage === totalPages"
+              >
+                &gt;
+              </button>
             </div>
 
           </div>
@@ -336,6 +444,68 @@ const deleteReview = async () => {
 }
 .custom-ion-textarea.ion-focused {
   border-color: #C89F8A;
-  --background: #fff;
+}
+
+.pagination-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.page-btn {
+  background: #C89F8A;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(200, 159, 138, 0.3);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: #b8937f;
+  transform: translateY(-2px);
+}
+
+.page-btn:disabled {
+  background: #e0d8d0;
+  color: #a39c97;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.page-info {
+  font-size: 16px;
+  font-weight: 700;
+  color: #3b2b26;
+  min-width: 60px;
+  text-align: center;
+}
+
+.btn-delete-admin {
+  background: #ffebee;
+  color: #d32f2f;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.btn-delete-admin:hover {
+  background: #ffcdd2;
 }
 </style>
