@@ -1,16 +1,12 @@
+<script setup lang="ts">
+import { IonApp, IonRouterOutlet } from '@ionic/vue';
+</script>
+
 <template>
-  <div class="app-wrapper">
-    <!-- เนื้อหาของแต่ละหน้า -->
-    <main class="page-content">
-      <router-view />
-    </main>
-
-    <!-- Footer ทุกหน้า -->
-    <footer class="footer">
-      <p>Booki Booki</p>
-      <p>An online booking platform for makeup artists and photographers.</p>
-      <p>© 2026 College of Computing | Khon Kaen University</p>
-    </footer>
-
-  </div>
+  <ion-app>
+    <ion-router-outlet />
+  </ion-app>
 </template>
+
+<style>
+</style>
