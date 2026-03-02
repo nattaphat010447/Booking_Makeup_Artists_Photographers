@@ -4,7 +4,8 @@ import { useRoute, useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { db } from '../config/firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { IonPage, IonContent, IonInput, IonButton, IonSpinner } from '@ionic/vue';
+
+import { IonPage, IonContent, IonInput, IonButton, IonSpinner, IonRefresher, IonRefresherContent } from '@ionic/vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -60,22 +61,61 @@ const removeProvince = (prov: string) => {
   selectedProvinces.value = selectedProvinces.value.filter(p => p !== prov);
 };
 
-const fetchProviders = async () => {
-  isLoading.value = true;
+const fetchProviders = async (event?: any) => {
+  // ถ้าดึงจอลงมารีเฟรช ไม่ต้องโชว์ Loading กลางจอ เพราะมันมีลูกข่างหมุนๆ ด้านบนอยู่แล้ว
+  if (!event) isLoading.value = true; 
+  
   try {
     const q = query(collection(db, 'users'), where('role', '==', 'provider'));
     const querySnapshot = await getDocs(q);
-    
     let fetchedData: any[] = [];
+    
+    // ดึงข้อมูลจริงจาก DB
     querySnapshot.forEach((doc) => {
       fetchedData.push({ id: doc.id, ...doc.data() });
     });
+
+    // --- ส่วน Mock Data 50 คน (คงไว้เหมือนเดิม) ---
+    const mockSpecialtiesMakeup = ['แต่งหน้าเจ้าสาว', 'แต่งหน้ารับปริญญา', 'แต่งหน้าสายฝอ', 'Cosplay Makeup', 'แต่งหน้าออกงาน'];
+    const mockSpecialtiesPhoto = ['ถ่ายภาพรับปริญญา', 'ถ่ายภาพคาเฟ่', 'ถ่ายภาพงานแต่ง', 'ถ่ายโปรไฟล์ส่วนตัว', 'ถ่ายภาพสินค้า'];
+    
+    for (let i = 1; i <= 50; i++) {
+      const isMakeup = Math.random() > 0.5; 
+      const serviceType = isMakeup ? 'makeup' : 'photographer';
+      const specialtyList = isMakeup ? mockSpecialtiesMakeup : mockSpecialtiesPhoto;
+      const specialty = specialtyList[Math.floor(Math.random() * specialtyList.length)];
+      const location = provinces[Math.floor(Math.random() * provinces.length)];
+
+      fetchedData.push({
+        id: 'mock-provider-' + i,
+        full_name: 'Mock ช่างคนที่ ' + i,
+        profile_image: `https://api.dicebear.com/7.x/avataaars/svg?seed=provider${i}`,
+        provider_info: {
+          service_type: serviceType,
+          specialty: specialty,
+          location: location,
+          price_start: Math.floor(Math.random() * 40) * 100 + 500, 
+          sold_count: Math.floor(Math.random() * 150), 
+          rating_avg: (Math.random() * 2 + 3).toFixed(1),
+          portfolios: [`https://picsum.photos/seed/work${i}/400/300`] 
+        }
+      });
+    }
+    // ----------------------------------------------
+
     providers.value = fetchedData;
   } catch (error) {
     console.error("Error fetching providers: ", error);
   } finally {
     isLoading.value = false;
+    if (event) {
+      event.target.complete();
+    }
   }
+};
+
+const handleRefresh = (event: CustomEvent) => {
+  fetchProviders(event);
 };
 
 const applyFilter = () => {
@@ -113,7 +153,7 @@ const filteredProviders = computed(() => {
 
 // ================= Pagination (แบ่งหน้า) =================
 const currentPage = ref(1);
-const itemsPerPage = 10; // แสดงหน้าละ 10 คน
+const itemsPerPage = 10;
 const providerListRef = ref<HTMLElement | null>(null);
 
 watch(filteredProviders, () => {
@@ -132,7 +172,6 @@ const paginatedProviders = computed(() => {
 
 const scrollToTop = () => {
   if (providerListRef.value) {
-    // เลื่อนจอขึ้นไปตรงจุดที่ตั้งอ้างอิงไว้
     providerListRef.value.scrollIntoView({ behavior: 'smooth' });
   }
 };
@@ -170,6 +209,13 @@ onUnmounted(() => {
     <Navbar />
 
     <ion-content>
+      <ion-refresher slot="fixed" @ionRefresh="handleRefresh($event)">
+          <ion-refresher-content
+            pulling-icon="lines"
+            refreshing-spinner="crescent">
+          </ion-refresher-content>
+        </ion-refresher>
+
       <div class="page-container">
         
         <div class="search-header">
