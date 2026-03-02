@@ -82,22 +82,33 @@ const handleSignOut = async () => {
         <template v-if="isLoggedIn">
 
           <div class="icon-wrapper" v-if="isAdmin">
-            <ion-button shape="round" class="icon-btn" @click="navigateTo('/admin')">⚙️</ion-button>
+            <ion-button shape="round" class="icon-btn" @click="navigateTo('/admin')">
+              <img src="/images/administrator.png" class="icon-img" />
+            </ion-button>
+          </div>
+          <div class="icon-wrapper">
+            <ion-button shape="round" class="icon-btn" @click="navigateTo('/chats')">
+              <img src="/images/bubble-chat.png" class="icon-img" />
+            </ion-button>
+            <span v-if="hasUnreadChat" class="badge"></span>
           </div>
 
           <div class="icon-wrapper">
-            <ion-button shape="round" class="icon-btn" @click="navigateTo('/chats')">💬</ion-button>
-            <span v-if="hasUnreadChat" class="badge"></span>
-          </div>
-          
-          <div class="icon-wrapper">
-            <ion-button shape="round" class="icon-btn" @click="navigateTo('/notifications')">🔔</ion-button>
+            <ion-button shape="round" class="icon-btn" @click="navigateTo('/notifications')">
+              <img src="/images/notification.png" class="icon-img" />
+            </ion-button>
             <span v-if="hasUnreadNoti" class="badge"></span>
           </div>
 
-          <ion-button shape="round" class="icon-btn" @click="navigateTo('/profile')">👤</ion-button>
-          <ion-button shape="round" class="icon-btn logout" @click="handleSignOut">🚪</ion-button>
+          <ion-button shape="round" class="icon-btn" @click="navigateTo('/profile')">
+            <img src="/images/user.png" class="icon-img" />
+          </ion-button>
+
+          <ion-button shape="round" class="icon-btn logout" @click="handleSignOut">
+            <img src="/images/logout.png" class="icon-img" />
+          </ion-button>
         </template>
+          
 
         <template v-else>
           <div class="nav-actions">
