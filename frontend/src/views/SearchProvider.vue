@@ -61,61 +61,38 @@ const removeProvince = (prov: string) => {
   selectedProvinces.value = selectedProvinces.value.filter(p => p !== prov);
 };
 
-const fetchProviders = async (event?: any) => {
-  // ถ้าดึงจอลงมารีเฟรช ไม่ต้องโชว์ Loading กลางจอ เพราะมันมีลูกข่างหมุนๆ ด้านบนอยู่แล้ว
-  if (!event) isLoading.value = true; 
+const fetchProviders = async (isRefresh = false) => {
+  if (!isRefresh) isLoading.value = true; 
   
   try {
     const q = query(collection(db, 'users'), where('role', '==', 'provider'));
     const querySnapshot = await getDocs(q);
     let fetchedData: any[] = [];
     
-    // ดึงข้อมูลจริงจาก DB
+    // ดึงเฉพาะข้อมูลจริงจาก DB
     querySnapshot.forEach((doc) => {
       fetchedData.push({ id: doc.id, ...doc.data() });
     });
 
-    // --- ส่วน Mock Data 50 คน (คงไว้เหมือนเดิม) ---
-    const mockSpecialtiesMakeup = ['แต่งหน้าเจ้าสาว', 'แต่งหน้ารับปริญญา', 'แต่งหน้าสายฝอ', 'Cosplay Makeup', 'แต่งหน้าออกงาน'];
-    const mockSpecialtiesPhoto = ['ถ่ายภาพรับปริญญา', 'ถ่ายภาพคาเฟ่', 'ถ่ายภาพงานแต่ง', 'ถ่ายโปรไฟล์ส่วนตัว', 'ถ่ายภาพสินค้า'];
-    
-    for (let i = 1; i <= 50; i++) {
-      const isMakeup = Math.random() > 0.5; 
-      const serviceType = isMakeup ? 'makeup' : 'photographer';
-      const specialtyList = isMakeup ? mockSpecialtiesMakeup : mockSpecialtiesPhoto;
-      const specialty = specialtyList[Math.floor(Math.random() * specialtyList.length)];
-      const location = provinces[Math.floor(Math.random() * provinces.length)];
-
-      fetchedData.push({
-        id: 'mock-provider-' + i,
-        full_name: 'Mock ช่างคนที่ ' + i,
-        profile_image: `https://api.dicebear.com/7.x/avataaars/svg?seed=provider${i}`,
-        provider_info: {
-          service_type: serviceType,
-          specialty: specialty,
-          location: location,
-          price_start: Math.floor(Math.random() * 40) * 100 + 500, 
-          sold_count: Math.floor(Math.random() * 150), 
-          rating_avg: (Math.random() * 2 + 3).toFixed(1),
-          portfolios: [`https://picsum.photos/seed/work${i}/400/300`] 
-        }
-      });
-    }
-    // ----------------------------------------------
+    // เรียงลำดับจากช่างที่สมัครใหม่สุด (ถ้ามี created_at)
+    fetchedData.sort((a, b) => {
+      const timeA = a.created_at?.toMillis ? a.created_at.toMillis() : 0;
+      const timeB = b.created_at?.toMillis ? b.created_at.toMillis() : 0;
+      return timeB - timeA; 
+    });
 
     providers.value = fetchedData;
   } catch (error) {
     console.error("Error fetching providers: ", error);
   } finally {
     isLoading.value = false;
-    if (event) {
-      event.target.complete();
-    }
   }
 };
 
 const handleRefresh = (event: CustomEvent) => {
-  fetchProviders(event);
+  fetchProviders(true).then(() => {
+    event.target.complete();
+  });
 };
 
 const applyFilter = () => {
