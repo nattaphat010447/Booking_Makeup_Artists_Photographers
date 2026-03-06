@@ -128,6 +128,12 @@ const filteredProviders = computed(() => {
   });
 });
 
+const closeProvinceDropdown = () => {
+  setTimeout(() => {
+    isProvinceDropdownOpen.value = false;
+  }, 200);
+};
+
 // ================= Pagination (แบ่งหน้า) =================
 const currentPage = ref(1);
 const itemsPerPage = 10;
@@ -229,7 +235,7 @@ onUnmounted(() => {
                 v-model="provinceSearch" 
                 placeholder="พิมพ์ชื่อจังหวัดเพื่อค้นหา..." 
                 @focus="isProvinceDropdownOpen = true" 
-                @blur="window.setTimeout(() => isProvinceDropdownOpen = false, 200)"
+                @blur="closeProvinceDropdown"
               />
               <div v-if="isProvinceDropdownOpen && filteredProvincesList.length > 0" class="province-dropdown">
                 <div v-for="prov in filteredProvincesList" :key="prov" class="dropdown-item" @click="selectProvince(prov)">

@@ -172,8 +172,8 @@ const handleRegister = async () => {
               <ion-input v-model="email" type="email" placeholder="Email" class="custom-ion-input" required></ion-input>
               <ion-input v-model="phone" type="tel" placeholder="Phone" class="custom-ion-input" required></ion-input>
 
-              <ion-input v-model="password" type="password" placeholder="Password" class="custom-ion-input" required minlength="6"></ion-input>
-              <ion-input v-model="confirmPassword" type="password" placeholder="Confirm Password" class="custom-ion-input" required minlength="6"></ion-input>
+              <ion-input v-model="password" type="password" placeholder="Password" class="custom-ion-input" required :minlength="6"></ion-input>
+              <ion-input v-model="confirmPassword" type="password" placeholder="Confirm Password" class="custom-ion-input" required :minlength="6"></ion-input>
 
               <ion-select v-model="role" placeholder="Select Role" class="custom-ion-select" interface="popover" required>
                 <ion-select-option value="customer">Customer</ion-select-option>
@@ -212,7 +212,7 @@ const handleRegister = async () => {
                 <ion-select-option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</ion-select-option>
               </ion-select>
 
-              <ion-textarea v-model="bio" rows="3" placeholder="Short bio..." class="custom-ion-textarea"></ion-textarea>
+              <ion-textarea v-model="bio" :rows="3" placeholder="Short bio..." class="custom-ion-textarea"></ion-textarea>
 
               <ion-button type="button" @click="handleRegister" class="ionic-primary-btn" :disabled="isLoading" style="--background: #C89F8A;">
                 <div v-if="isLoading" class="loading-content">
