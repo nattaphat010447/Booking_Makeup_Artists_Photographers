@@ -149,7 +149,7 @@ const handleSave = async () => {
       
       for (let i = 0; i < 6; i++) {
         if (newPortfolioImages.value[i]) {
-          const newUrl = await uploadToCloudinary(newPortfolioImages.value[i]);
+          const newUrl = await uploadToCloudinary(newPortfolioImages.value[i] as File | null);
           updatedPortfolios[i] = newUrl;
         }
       }
@@ -235,7 +235,7 @@ const handleSave = async () => {
 
               <div class="input-group">
                 <label>เปลี่ยนรหัสผ่านใหม่:</label>
-                <ion-input v-model="newPassword" type="password" placeholder="รหัสผ่านใหม่ (ไม่บังคับ)" class="custom-ion-input" minlength="6" :disabled="isSaving"></ion-input>
+                <ion-input v-model="newPassword" type="password" placeholder="รหัสผ่านใหม่ (ไม่บังคับ)" class="custom-ion-input" :minlength="6" :disabled="isSaving"></ion-input>
                 <small class="hint">* การเปลี่ยนรหัสผ่านอาจจะต้องทำการ Login ใหม่อีกครั้ง</small>
               </div>
             </div>
@@ -262,7 +262,7 @@ const handleSave = async () => {
 
               <div class="input-group">
                 <label>Bio (แนะนำตัว):</label>
-                <ion-textarea v-model="bio" rows="4" class="custom-ion-textarea" :disabled="isSaving"></ion-textarea>
+                <ion-textarea v-model="bio" :rows="4" class="custom-ion-textarea" :disabled="isSaving"></ion-textarea>
               </div>
 
               <div class="input-group">

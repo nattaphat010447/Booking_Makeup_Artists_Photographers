@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/cli": "^8.2.0",
+    "@capacitor/core": "^8.2.0",
     "@ionic/vue": "^8.7.18",
     "@ionic/vue-router": "^8.7.18",
     "firebase": "^12.9.0",

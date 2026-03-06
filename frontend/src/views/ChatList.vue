@@ -83,7 +83,7 @@ const fetchChatRooms = (myUid: string) => {
             v-for="chat in chatRooms" 
             :key="chat.id" 
             button 
-            detail="false"
+            :detail="false"
             @click="router.push(`/chat/${chat.id}`)"
             class="chat-item"
           >

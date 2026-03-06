@@ -3,7 +3,7 @@ import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { auth, db } from '../config/firebase';
 import { collection, doc, setDoc, addDoc, onSnapshot, query, orderBy, serverTimestamp, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { IonPage, IonContent, IonFooter, IonToolbar, IonInput, IonButton, IonSpinner } from '@ionic/vue';
+import { IonPage, IonContent, IonFooter, IonInput, IonButton, IonSpinner } from '@ionic/vue';
 
 const route = useRoute();
 const router = useRouter();

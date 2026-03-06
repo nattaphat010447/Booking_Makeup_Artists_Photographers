@@ -89,7 +89,7 @@ const fetchProviders = async (isRefresh = false) => {
   }
 };
 
-const handleRefresh = (event: CustomEvent) => {
+const handleRefresh = (event: any) => {
   fetchProviders(true).then(() => {
     event.target.complete();
   });
@@ -229,7 +229,7 @@ onUnmounted(() => {
                 v-model="provinceSearch" 
                 placeholder="พิมพ์ชื่อจังหวัดเพื่อค้นหา..." 
                 @focus="isProvinceDropdownOpen = true" 
-                @blur="setTimeout(() => isProvinceDropdownOpen = false, 200)"
+                @blur="window.setTimeout(() => isProvinceDropdownOpen = false, 200)"
               />
               <div v-if="isProvinceDropdownOpen && filteredProvincesList.length > 0" class="province-dropdown">
                 <div v-for="prov in filteredProvincesList" :key="prov" class="dropdown-item" @click="selectProvince(prov)">

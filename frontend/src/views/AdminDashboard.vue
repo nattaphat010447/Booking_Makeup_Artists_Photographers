@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar.vue';
 import { db, auth } from '../config/firebase';
 import { collection, getDocs, doc, updateDoc, deleteDoc, query, where  } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { IonPage, IonContent, IonSegment, IonSegmentButton, IonLabel, IonSpinner, IonButton, IonIcon } from '@ionic/vue';
+import { IonPage, IonContent, IonSegment, IonSegmentButton, IonLabel, IonSpinner } from '@ionic/vue';
 
 const router = useRouter();
 const isLoading = ref(true);
@@ -20,7 +20,7 @@ onMounted(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       const userDoc = await getDocs(query(collection(db, 'users'), where('__name__', '==', user.uid)));
-      if (!userDoc.empty && userDoc.docs[0].data().role === 'admin') {
+      if (!userDoc.empty && userDoc.docs[0]?.data()?.role === 'admin') {
         fetchAllData();
       } else {
         alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');

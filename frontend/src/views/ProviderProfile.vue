@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar.vue';
 import { db, auth } from '../config/firebase';
 import { doc, getDoc, collection, query, where, getDocs, addDoc, serverTimestamp, updateDoc, deleteDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { IonPage, IonContent, IonButton, IonSpinner, IonSelect, IonSelectOption, IonTextarea } from '@ionic/vue';
+import { IonPage, IonContent, IonButton, IonSpinner, IonTextarea } from '@ionic/vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -306,9 +306,9 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                 
                 <ion-textarea 
                   v-model="reviewForm.comment" 
-                  rows="3" 
+                  :rows="3" 
                   placeholder="เขียนรีวิวของคุณ..."
-                  maxlength="150"
+                  :maxlength="150"
                   class="custom-ion-textarea"
                 ></ion-textarea>
                 
@@ -354,9 +354,9 @@ const deleteReviewByAdmin = async (reviewId: string) => {
 
               <ion-textarea 
                 v-model="reviewForm.comment" 
-                rows="3" 
+                :rows="3" 
                 placeholder="เขียนรีวิวของคุณ..."
-                maxlength="150"
+                :maxlength="150"
                 class="custom-ion-textarea"
               ></ion-textarea>
               

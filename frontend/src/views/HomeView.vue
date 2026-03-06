@@ -1,7 +1,7 @@
 <style src="../styles/home.css"></style>
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
-import { IonPage, IonContent, IonButton, IonIcon } from '@ionic/vue';
+import { IonPage, IonContent, IonButton } from '@ionic/vue';
 
 const router = useRouter();
 
