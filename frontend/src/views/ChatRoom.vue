@@ -27,6 +27,7 @@ const quotePrice = ref('');
 const quoteWorkDate = ref('');
 
 const isUploadingSlip = ref(false); 
+const isCompletingJob = ref(false);
 const contentRef = ref<any>(null);
 let unsubscribeMessages: any = null;
 let unsubscribeMeta: any = null;
@@ -34,6 +35,10 @@ let unsubscribeMeta: any = null;
 const lastMyMessageId = computed(() => {
   const myMsgs = messages.value.filter(m => m.senderId === myUid);
   return myMsgs.length > 0 ? myMsgs[myMsgs.length - 1].id : null;
+});
+
+const activePaidQuotation = computed(() => {
+  return messages.value.find(m => m.type === 'quotation' && m.data?.status === 'paid');
 });
 
 // ================= Functions =================
@@ -114,7 +119,7 @@ const sendQuotation = async () => {
     price: quotePrice.value,
     dateReserved: dateReserved,
     dateToWork: quoteWorkDate.value,
-    status: 'pending'
+    status: 'pending' // pending -> paid -> completed
   };
 
   await setDoc(doc(db, 'chats', roomId), {
@@ -164,10 +169,12 @@ const handleSlipUpload = async (e: Event, msg: any) => {
       'data.status': 'paid'
     });
 
+    /*
     const providerRef = doc(db, 'users', msg.senderId);
     await updateDoc(providerRef, {
       'provider_info.sold_count': increment(1)
     });
+    */
 
     await addDoc(collection(db, 'chats', roomId, 'messages'), {
       senderId: myUid,
@@ -206,15 +213,52 @@ const handleSlipUpload = async (e: Event, msg: any) => {
     isUploadingSlip.value = false;
   }
 };
+
+const markJobAsCompleted = async () => {
+  const quotationMsg = activePaidQuotation.value;
+  if (!quotationMsg) return;
+  if (!confirm('Are you sure the job is done? The payment will be transferred to the provider.')) return;
+  isCompletingJob.value = true;
+  try {
+    await updateDoc(doc(db, 'chats', roomId, 'messages', quotationMsg.id), {
+      'data.status': 'completed'
+    });
+    await updateDoc(doc(db, 'users', quotationMsg.senderId), {
+      'provider_info.sold_count': increment(1)
+    });
+    await addDoc(collection(db, 'chats', roomId, 'messages'), {
+      senderId: 'system',
+      type: 'system',
+      text: 'The job is completed and the payment has been transferred to the provider successfully.',
+      createdAt: serverTimestamp()
+    });
+    await setDoc(doc(db, 'chats', roomId), {
+      participants: [myUid, otherUserId],
+      lastMessage: 'Job Completed',
+      updatedAt: serverTimestamp(),
+      unreadBy: otherUserId
+    }, { merge: true });
+  } catch (error) {
+    console.error('Error completing job:', error);
+    alert('Failed to complete the job.');
+  } finally {
+    isCompletingJob.value = false;
+  }
+};
+
+const goBack = () => {
+  (document.activeElement as HTMLElement)?.blur();
+  router.push('/chats');
+};
 </script>
 
 <template>
   <ion-page>
     <div class="chat-header">
-      <button class="back-btn" @click="router.push('/chats')">
+      <button class="back-btn" @click="goBack">
         <img src="/images/back.png" alt="back" class="back-icon">
       </button>
-      <img :src="otherUser?.profile_image || 'https://via.placeholder.com/40'" class="avatar" />
+      <img :src="otherUser?.profile_image && otherUser.profile_image.includes('http') ? otherUser.profile_image : 'https://ui-avatars.com/api/?name=U&background=EAEAEA&color=333'" class="avatar" />
       <span class="name">{{ otherUser?.full_name || 'Loading...' }}</span>
     </div>
 
@@ -236,7 +280,7 @@ const handleSlipUpload = async (e: Event, msg: any) => {
           </div>
 
           <div v-if="msg.type === 'image'" class="action-bubble image-bubble">
-            <div class="action-label">Proof of payment</div>
+            <div class="action-label">🧾 Proof of Payment</div>
             <img :src="msg.imageUrl" class="chat-image" />
           </div>
 
@@ -245,33 +289,44 @@ const handleSlipUpload = async (e: Event, msg: any) => {
           </div>
 
           <div v-if="msg.type === 'quotation'" class="action-bubble quote-bubble">
-            <div class="quote-header">quotation</div>
-            <p><strong>Service provider:</strong> {{ msg.data.providerName }}</p>
-            <p><strong>Service recipient:</strong> {{ msg.data.customerName }}</p>
-            <p><strong>price:</strong> <span class="highlight">{{ msg.data.price }} ฿</span></p>
-            <p><strong>Booking date:</strong> {{ msg.data.dateReserved }}</p>
-            <p><strong>Working date:</strong> {{ msg.data.dateToWork }}</p>
+            <div class="quote-header">Quotation</div>
+            <p><strong>Service Provider:</strong> {{ msg.data.providerName }}</p>
+            <p><strong>Customer:</strong> {{ msg.data.customerName }}</p>
+            <p><strong>Price:</strong> <span class="highlight">{{ msg.data.price }} ฿</span></p>
+            <p><strong>Booking Date:</strong> {{ msg.data.dateReserved }}</p>
+            <p><strong>Working Date:</strong> {{ msg.data.dateToWork }}</p>
             
-            <div class="qr-box">
+            <div v-if="msg.data.status === 'pending'" class="qr-box">
               <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" class="qr-mockup" alt="QR Code" />
               <span class="qr-text">Scan to pay</span>
             </div>
 
             <template v-if="msg.senderId !== myUid">
-              <label v-if="msg.data.status !== 'paid'" class="btn-slip" :class="{ disabled: isUploadingSlip }">
+              <label v-if="msg.data.status === 'pending'" class="btn-slip" :class="{ disabled: isUploadingSlip }">
                 <ion-spinner v-if="isUploadingSlip" name="dots"></ion-spinner>
-                <span v-else>Attach the payment slip.</span>
+                <span v-else>📷 Attach Payment Slip</span>
                 <input type="file" accept="image/*" class="hidden" @change="(e) => handleSlipUpload(e, msg)" :disabled="isUploadingSlip" />
               </label>
-              <div v-else class="paid-status-box">Payment has been completed.</div>
+              <div v-else-if="msg.data.status === 'paid'" class="paid-status-box">
+                Paid. Waiting for job completion.
+              </div>
+              <div v-else-if="msg.data.status === 'completed'" class="paid-status-box success">
+                Job completed successfully!
+              </div>
             </template>
+
             <template v-else>
-              <div v-if="msg.data.status === 'paid'" class="paid-status-box">The customer has completed the payment.</div>
+              <div v-if="msg.data.status === 'paid'" class="paid-status-box">
+                Customer has paid. Waiting for you to complete the job.
+              </div>
+              <div v-else-if="msg.data.status === 'completed'" class="paid-status-box success">
+                Job completed! Payment received.
+              </div>
             </template>
           </div>
 
           <div v-if="msg.id === lastMyMessageId && msg.type !== 'system'" class="read-receipt">
-            {{ chatMeta?.unreadBy === otherUserId ? 'ส่งแล้ว' : 'อ่านแล้ว' }}
+            {{ chatMeta?.unreadBy === otherUserId ? 'Sent' : 'Read' }}
           </div>
 
         </div>
@@ -279,6 +334,14 @@ const handleSlipUpload = async (e: Event, msg: any) => {
     </ion-content>
 
     <ion-footer class="ion-no-border">
+      
+      <div v-if="myRole === 'customer' && activePaidQuotation" class="job-complete-banner">
+        <ion-button expand="block" @click="markJobAsCompleted" :disabled="isCompletingJob" style="--background: #6b5a50; --border-radius: 12px; font-weight: bold;">
+          <ion-spinner v-if="isCompletingJob" name="crescent"></ion-spinner>
+          <span v-else>Mark Job as Completed</span>
+        </ion-button>
+      </div>
+
       <div class="chat-footer">
         <ion-button v-if="myRole === 'provider'" fill="clear" class="btn-quote" @click="showQuoteModal = true" style="--color: #3b2b26;">
           <img src="/images/quote.png" class="quote-icon" />
@@ -292,18 +355,18 @@ const handleSlipUpload = async (e: Event, msg: any) => {
 
     <div v-if="showQuoteModal" class="modal-overlay" @click.self="showQuoteModal = false">
       <div class="modal-box">
-        <h3>Create a quotation</h3>
+        <h3>Create a Quotation</h3>
         <div class="input-group">
           <label>Price (THB):</label>
           <ion-input type="number" v-model="quotePrice" placeholder="Enter price" class="custom-ion-input"></ion-input>
         </div>
         <div class="input-group">
-          <label>Working date:</label>
+          <label>Working Date:</label>
           <ion-input type="date" v-model="quoteWorkDate" class="custom-ion-input"></ion-input>
         </div>
         <div class="modal-actions">
           <ion-button fill="outline" class="btn-cancel-modal" @click="showQuoteModal = false" style="--color: #555; --border-color: #ccc; flex: 1;">Cancel</ion-button>
-          <ion-button class="btn-submit-modal" @click="sendQuotation" style="--background: #C89F8A; flex: 1;">send</ion-button>
+          <ion-button class="btn-submit-modal" @click="sendQuotation" style="--background: #C89F8A; flex: 1;">Send</ion-button>
         </div>
       </div>
     </div>
@@ -595,6 +658,10 @@ const handleSlipUpload = async (e: Event, msg: any) => {
   text-align: center;
 }
 
+.job-complete-banner {
+  background:none;
+  background: #fdfaf7;
+  }
 
 /* ================= READ RECEIPT ================= */
 

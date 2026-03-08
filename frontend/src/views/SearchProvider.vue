@@ -366,7 +366,7 @@ onUnmounted(() => {
                   </span>
                   <span>
                     <img src="/images/star.png" class="stat-icon" />
-                    {{ provider.provider_info?.rating_avg || '0.0' }}
+                    {{ provider.provider_info?.rating_avg ? Number(provider.provider_info.rating_avg).toFixed(1) : '0.0' }}
                   </span>
                 </div>
               </div>

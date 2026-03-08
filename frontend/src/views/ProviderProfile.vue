@@ -111,8 +111,11 @@ const checkCanReview = async (myUid: string) => {
     const roomId = myUid < providerId ? `${myUid}_${providerId}` : `${providerId}_${myUid}`;
     const q = query(collection(db, 'chats', roomId, 'messages'), where('type', '==', 'quotation'));
     const snap = await getDocs(q);
-    canReview.value = snap.docs.some(document => document.data().data?.status === 'paid');
-  } catch (error) { console.error(error); }
+    
+    canReview.value = snap.docs.some(document => document.data().data?.status === 'completed');
+  } catch (error) { 
+    console.error(error); 
+  }
 };
 
 const handleChatClick = () => {
@@ -278,10 +281,10 @@ const deleteReviewByAdmin = async (reviewId: string) => {
               </span>
               <span class="stat-item">
                 <img src="/images/star.png" class="stat-icon" />
-                {{ provider.provider_info?.rating_avg || '0.0' }}
+                {{ provider.provider_info?.rating_avg ? Number(provider.provider_info.rating_avg).toFixed(1) : '0.0' }}
               </span>
               <div class="price">
-              Starting with {{ provider.provider_info?.price_start || 0 }} bath
+              Starting with {{ provider.provider_info?.price_start || 0 }} ฿
             </div>
             </div>
 
@@ -504,7 +507,7 @@ const deleteReviewByAdmin = async (reviewId: string) => {
   display:flex;
   gap:10px;
   margin-top:12px;
-  flex-wrap:wrap;
+  /*flex-wrap:wrap;*/
 }
 
 .thumbnail{

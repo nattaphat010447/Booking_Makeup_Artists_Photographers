@@ -59,6 +59,12 @@ const fetchChatRooms = (myUid: string) => {
     isLoading.value = false;
   });
 };
+
+
+const goToChat = (id: string) => {
+  (document.activeElement as HTMLElement)?.blur();
+  router.push(`/chat/${id}`);
+};
 </script>
 
 <template>
@@ -83,12 +89,12 @@ const fetchChatRooms = (myUid: string) => {
             v-for="chat in chatRooms" 
             :key="chat.id" 
             button 
-            :detail="false"
-            @click="router.push(`/chat/${chat.id}`)"
+            detail="false"
+            @click="goToChat(chat.id)" 
             class="chat-item"
           >
             <ion-avatar slot="start" class="chat-avatar">
-              <img :src="chat.avatar" />
+              <img :src="chat.avatar && chat.avatar.includes('http') ? chat.avatar : 'https://ui-avatars.com/api/?name=User&background=EAEAEA&color=333'" />
             </ion-avatar>
 
             <ion-label>
