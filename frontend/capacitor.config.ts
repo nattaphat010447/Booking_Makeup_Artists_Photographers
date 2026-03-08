@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'com.bookibooki.app',
   webDir: 'dist',
   "server": {
-    "url": "http://localhost:5173",
+    "url": "http://192.168.1.130:5173",
     "cleartext": true
   }
 };
