@@ -69,14 +69,14 @@ const fetchChatRooms = (myUid: string) => {
       <div class="page-container">
         
         <div class="chat-header">
-          <h2>💬 ข้อความของคุณ</h2>
+          <h2>Chat</h2>
         </div>
 
         <div v-if="isLoading" class="loading">
           <ion-spinner name="crescent"></ion-spinner>
-          <p>กำลังโหลดข้อความ...</p>
+          <p>Loading...</p>
         </div>
-        <div v-else-if="chatRooms.length === 0" class="empty">ยังไม่มีประวัติการสนทนา</div>
+        <div v-else-if="chatRooms.length === 0" class="empty">There is no conversation history yet.</div>
 
         <ion-list v-else lines="full" class="chat-list">
           <ion-item 
@@ -96,7 +96,7 @@ const fetchChatRooms = (myUid: string) => {
                 <span class="name" :class="{ 'unread-text': chat.unreadBy === auth.currentUser?.uid }">
                   {{ chat.name }}
                 </span>
-                <span class="time">ล่าสุด</span>
+                <span class="time">latest</span>
               </div>
               <p class="last-message" :class="{ 'unread-text': chat.unreadBy === auth.currentUser?.uid }">
                 {{ chat.lastMessage }}

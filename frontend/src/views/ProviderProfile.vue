@@ -32,6 +32,10 @@ const reviewForm = ref({
   comment: ''
 });
 
+const goBack = () => {
+  router.back();
+};
+
 const currentPage = ref(1);
 const itemsPerPage = 5;
 
@@ -78,7 +82,7 @@ const fetchProvider = async () => {
       provider.value = docSnap.data();
       if (provider.value.provider_info?.portfolios?.length > 0) mainImage.value = provider.value.provider_info.portfolios[0];
     } else {
-      alert('ไม่พบข้อมูลผู้ให้บริการท่านนี้');
+      alert('No information was found for this service provider.');
       router.push('/search');
     }
   } catch (error) { console.error(error); } finally { isLoading.value = false; }
@@ -117,11 +121,11 @@ const handleChatClick = () => {
 };
 
 const submitReview = async () => {
-  if (!reviewForm.value.comment.trim()) { alert('กรุณากรอกข้อความรีวิว'); return; }
+  if (!reviewForm.value.comment.trim()) { alert('Please fill in your review text'); return; }
   isSubmittingReview.value = true;
   try {
     const myDoc = await getDoc(doc(db, 'users', currentUser.value.uid));
-    const myData = myDoc.exists() ? myDoc.data() : { full_name: 'ผู้ใช้งาน', profile_image: '' };
+    const myData = myDoc.exists() ? myDoc.data() : { full_name: 'User', profile_image: '' };
 
     const newReview = {
       providerId: providerId, customerId: currentUser.value.uid,
@@ -131,15 +135,15 @@ const submitReview = async () => {
     await addDoc(collection(db, 'reviews'), newReview);
     
     await addDoc(collection(db, 'notifications'), {
-      userId: providerId, type: 'review', title: '⭐ คุณได้รับรีวิวใหม่!',
-      message: `ลูกค้า ${myData.full_name} ได้เขียนรีวิวและให้คะแนนคุณ ${reviewForm.value.rating} ดาว`,
+      userId: providerId, type: 'review', title: 'You have a new review!',
+      message: `Customer ${myData.full_name} has written a review and rated you ${reviewForm.value.rating} stars`,
       isRead: false, createdAt: serverTimestamp(), link: `/provider/${providerId}`
     });
     
     await updateProviderRating();
     reviewForm.value.comment = ''; canReview.value = false; 
     await fetchReviews(); await fetchProvider();
-  } catch (error) { alert('เกิดข้อผิดพลาดในการส่งรีวิว'); } 
+  } catch (error) { alert('An error occurred while submitting the review'); } 
   finally { isSubmittingReview.value = false; }
 };
 
@@ -150,29 +154,29 @@ const startEditReview = () => {
 };
 
 const saveEditedReview = async () => {
-  if (!reviewForm.value.comment.trim()) { alert('กรุณากรอกข้อความรีวิว'); return; }
+  if (!reviewForm.value.comment.trim()) { alert('Please fill in your review text'); return; }
   isSubmittingReview.value = true;
   try {
     await updateDoc(doc(db, 'reviews', myReview.value.id), {
       rating: reviewForm.value.rating, comment: reviewForm.value.comment, updatedAt: serverTimestamp() 
     });
     await updateProviderRating();
-    alert('อัปเดตรีวิวเรียบร้อยครับ!');
+    alert('Review updated successfully!');
     isEditingReview.value = false; reviewForm.value.comment = '';
     await fetchReviews(); await fetchProvider();
-  } catch (error) { alert('เกิดข้อผิดพลาดในการแก้ไขรีวิว'); } 
+  } catch (error) { alert('An error occurred while editing the review'); } 
   finally { isSubmittingReview.value = false; }
 };
 
 const deleteReview = async () => {
-  if (!confirm('คุณแน่ใจหรือไม่ที่จะลบรีวิวนี้?')) return;
+  if (!confirm('Are you sure you want to delete this review?')) return;
   try {
     await deleteDoc(doc(db, 'reviews', myReview.value.id));
     await updateProviderRating();
-    alert('ลบรีวิวเรียบร้อยแล้ว');
+    alert('Review deleted successfully!');
     hasReviewed.value = false; myReview.value = null; isEditingReview.value = false;
     await checkCanReview(currentUser.value.uid); await fetchReviews(); await fetchProvider();
-  } catch (error) { alert('เกิดข้อผิดพลาดในการลบรีวิว'); }
+  } catch (error) { alert('An error occurred while deleting the review'); }
 };
 
 const totalPages = computed(() => {
@@ -208,16 +212,16 @@ const scrollToReviews = () => {
 };
 
 const deleteReviewByAdmin = async (reviewId: string) => {
-  if (!confirm('🚨 ยืนยันการลบรีวิวนี้ด้วยสิทธิ์แอดมิน?')) return;
+  if (!confirm('Do you need administrator privileges to confirm the deletion of this review?')) return;
   try {
     await deleteDoc(doc(db, 'reviews', reviewId));
     await updateProviderRating();
-    alert('แอดมินลบรีวิวสำเร็จ');
+    alert('Admin deleted review successfully!');
     await fetchReviews(); 
     await fetchProvider();
   } catch (error) {
     console.error('Error deleting review:', error);
-    alert('เกิดข้อผิดพลาดในการลบรีวิว');
+    alert('An error occurred while deleting the review');
   }
 };
 </script>
@@ -225,18 +229,27 @@ const deleteReviewByAdmin = async (reviewId: string) => {
 <template>
   <ion-page>
     <Navbar />
-
     <ion-content class="custom-content">
+      <div class="back-button" @click="goBack">
+      <img src="/images/back.png" class="back-icon" />
+    </div>
       <div class="page-container">
         
         <div v-if="isLoading" class="loading">
           <ion-spinner name="crescent" color="medium"></ion-spinner>
-          <p>กำลังโหลดข้อมูลช่าง...</p>
+          <p>Loading provider data...</p>
         </div>
         
         <div v-else-if="provider" class="content">
           <div class="gallery-section">
-            <img :src="mainImage || 'https://via.placeholder.com/390x350'" class="main-image" />
+
+            <div class="main-image-wrapper">
+              <img 
+                :src="mainImage || 'https://via.placeholder.com/390x350'" 
+                class="main-image"
+              />
+            </div>
+
             <div class="thumbnail-list">
               <img 
                 v-for="(img, idx) in provider.provider_info?.portfolios" 
@@ -247,27 +260,36 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                 @click="mainImage = img"
               />
             </div>
+
           </div>
 
+
           <div class="details-section">
-            <h2 class="specialty">{{ provider.provider_info?.specialty || 'รับงานทั่วไป' }}</h2>
-            <div class="stats">
-              <span>💼 Sold {{ provider.provider_info?.sold_count || 0 }} ครั้ง</span>
-              <span>⭐ {{ provider.provider_info?.rating_avg || '0.0' }}</span>
-            </div>
-            <div class="price">
-              เริ่มต้นที่ {{ provider.provider_info?.price_start || 0 }} บาท
-            </div>
+            <h2 class="specialty">{{ provider.provider_info?.specialty || 'Accepting general assignments' }}</h2>
             
             <div class="bio-box">
-              <p>{{ provider.provider_info?.bio || 'ช่างยังไม่ได้เพิ่มคำแนะนำตัว...' }}</p>
+              <p>{{ provider.provider_info?.bio || 'Service provider has not added a bio yet...' }}</p>
+            </div>
+
+            <div class="stats">
+              <span class="stat-item">
+                <img src="/images/sold.png" class="stat-icon" />
+                Sold {{ provider.provider_info?.sold_count || 0 }} ครั้ง
+              </span>
+              <span class="stat-item">
+                <img src="/images/star.png" class="stat-icon" />
+                {{ provider.provider_info?.rating_avg || '0.0' }}
+              </span>
+              <div class="price">
+              Starting with {{ provider.provider_info?.price_start || 0 }} bath
+            </div>
             </div>
 
             <div class="profile-row">
               <img :src="provider.profile_image || 'https://via.placeholder.com/50'" class="avatar" />
               <div class="name-info">
                 <span class="name">{{ provider.full_name }}</span>
-                <span class="role">{{ provider.provider_info?.service_type === 'makeup' ? 'ช่างแต่งหน้า' : 'ช่างภาพ' }}</span>
+                <span class="role">{{ provider.provider_info?.service_type === 'makeup' ? 'Service Provider' : 'Photographer' }}</span>
               </div>
             </div>
 
@@ -276,25 +298,25 @@ const deleteReviewByAdmin = async (reviewId: string) => {
               @click="handleChatClick" 
               expand="block" 
               style="--background: #3b2b26; --border-radius: 14px; height: 56px; font-weight: bold; font-size: 16px;">
-              💬 คุยกับ Service Provider
+              Chat with Service Provider
             </ion-button>
           </div>
 
           <div class="reviews-section" ref="reviewsSectionRef">
-            <h3>รีวิวจากลูกค้า ({{ reviews.length }})</h3>
+            <h3>Customer reviews ({{ reviews.length }})</h3>
 
             <div v-if="hasReviewed && myReview" class="my-review-box">
               <div class="box-header">
-                <h4>⭐ รีวิวของคุณ</h4>
+                <h4>Your Review</h4>
                 <div class="action-links" v-if="!isEditingReview">
-                  <span @click="startEditReview" class="link-edit">แก้ไข</span>
-                  <span @click="deleteReview" class="link-delete">ลบ</span>
+                  <span @click="startEditReview" class="link-edit">Edit</span>
+                  <span @click="deleteReview" class="link-delete">Delete</span>
                 </div>
               </div>
 
               <div v-if="isEditingReview" class="review-form-box">
                 <div class="rating-select">
-                  <label>ให้คะแนน: </label>
+                  <label>Rate: </label>
                   <select v-model="reviewForm.rating">
                     <option :value="5">⭐⭐⭐⭐⭐</option>
                     <option :value="4">⭐⭐⭐⭐</option>
@@ -307,7 +329,7 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                 <ion-textarea 
                   v-model="reviewForm.comment" 
                   :rows="3" 
-                  placeholder="เขียนรีวิวของคุณ..."
+                  placeholder="Write your review..."
                   :maxlength="150"
                   class="custom-ion-textarea"
                 ></ion-textarea>
@@ -318,7 +340,7 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                   <ion-button fill="outline" class="btn-cancel" @click="isEditingReview = false" style="--color: #3b2b26; --border-color: #eaddd3; margin: 0; flex: 1;">ยกเลิก</ion-button>
                   <ion-button class="btn-submit-review" @click="saveEditedReview" :disabled="isSubmittingReview" style="--background: #C89F8A; margin: 0; flex: 2;">
                     <ion-spinner v-if="isSubmittingReview" name="dots"></ion-spinner>
-                    <span v-else>บันทึกการแก้ไข</span>
+                    <span v-else>Save Changes</span>
                   </ion-button>
                 </div>
               </div>
@@ -333,16 +355,15 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                 </div>
                 <p class="rev-comment">"{{ myReview.comment }}"</p>
                 <small v-if="myReview.updatedAt" class="edited-timestamp">
-                  แก้ไขแล้ว {{ formatEditedTime(myReview.updatedAt) }}
+                  Edited on {{ formatEditedTime(myReview.updatedAt) }}
                 </small>
               </div>
             </div>
 
             <div v-else-if="canReview" class="review-form-box">
-              <h4>เขียนรีวิวของคุณ</h4>
-              
+              <h4>Write your review</h4>
               <div class="rating-select">
-                <label>ให้คะแนน: </label>
+                <label>Rate: </label>
                 <select v-model="reviewForm.rating">
                   <option :value="5">⭐⭐⭐⭐⭐</option>
                   <option :value="4">⭐⭐⭐⭐</option>
@@ -355,7 +376,7 @@ const deleteReviewByAdmin = async (reviewId: string) => {
               <ion-textarea 
                 v-model="reviewForm.comment" 
                 :rows="3" 
-                placeholder="เขียนรีวิวของคุณ..."
+                placeholder="Write your review..."
                 :maxlength="150"
                 class="custom-ion-textarea"
               ></ion-textarea>
@@ -364,11 +385,11 @@ const deleteReviewByAdmin = async (reviewId: string) => {
 
               <ion-button expand="block" @click="submitReview" :disabled="isSubmittingReview" style="--background: #C89F8A; --border-radius: 12px; height: 48px; font-weight: bold;">
                  <ion-spinner v-if="isSubmittingReview" name="dots"></ion-spinner>
-                 <span v-else>ส่งรีวิว</span>
+                 <span v-else>Submit Review</span>
               </ion-button>
             </div>
 
-            <div v-if="reviews.length === 0" class="no-reviews">ยังไม่มีรีวิวสำหรับช่างท่านนี้</div>
+            <div v-if="reviews.length === 0" class="no-reviews">No reviews yet for this provider</div>
 
             <div v-for="rev in paginatedReviews" :key="rev.id" class="review-card">
               <div class="rev-header" style="justify-content: space-between;">
@@ -381,13 +402,13 @@ const deleteReviewByAdmin = async (reviewId: string) => {
                 </div>
                 
                 <button v-if="currentUserRole === 'admin'" class="btn-delete-admin" @click="deleteReviewByAdmin(rev.id)">
-                  ลบ
+                  Delete
                 </button>
               </div>
 
               <p class="rev-comment">"{{ rev.comment }}"</p>
               <small v-if="rev.updatedAt" class="edited-timestamp">
-                แก้ไขแล้ว {{ formatEditedTime(rev.updatedAt) }}
+                Edited on {{ formatEditedTime(rev.updatedAt) }}
               </small>
             </div>
 
@@ -416,12 +437,12 @@ const deleteReviewByAdmin = async (reviewId: string) => {
 
         <div v-if="showAuthModal" class="modal-overlay" @click.self="showAuthModal = false">
           <div class="modal-box">
-            <h3>กรุณาสร้างบัญชีหรือเข้าสู่ระบบ<br>เพื่อพูดคุยกับ Service Provider</h3>
+            <h3>Please create an account or log in<br>to chat with the Service Provider</h3>
             <div class="modal-actions">
               <ion-button @click="router.push('/login')" expand="block" style="--background: #C89F8A; margin-bottom: 10px;">Sign In</ion-button>
               <ion-button fill="outline" @click="router.push('/register')" expand="block" style="--color: #3b2b26; --border-color: #ccc;">Sign Up</ion-button>
             </div>
-            <button class="close-btn" @click="showAuthModal = false" style="background: none; border: none; color: #888; text-decoration: underline; margin-top: 10px;">ปิด</button>
+            <button class="close-btn" @click="showAuthModal = false" style="background: none; border: none; color: #888; text-decoration: underline; margin-top: 10px;">Close</button>
           </div>
         </div>
 
@@ -429,83 +450,333 @@ const deleteReviewByAdmin = async (reviewId: string) => {
     </ion-content>
   </ion-page>
 </template>
-
 <style scoped>
-.custom-ion-textarea {
-  --padding-start: 12px;
-  --padding-end: 12px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  --background: #faf8f5;
-  border: 1px solid #e0d8d0;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-.custom-ion-textarea.ion-focused {
-  border-color: #C89F8A;
+
+/* =========================
+   Page Layout
+========================= */
+
+.page-container{
+  max-width:1100px;
+  margin:auto;
+  padding:24px;
 }
 
-.pagination-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(0,0,0,0.05);
+.content{
+  display:grid;
+  grid-template-columns: 420px 1fr;
+  gap:40px;
+  align-items:start;
 }
 
-.page-btn {
-  background: #C89F8A;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 18px;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 10px rgba(200, 159, 138, 0.3);
+/* =========================
+   Gallery Section
+========================= */
+
+.gallery-section{
+  width:100%;
 }
 
-.page-btn:hover:not(:disabled) {
-  background: #b8937f;
-  transform: translateY(-2px);
+/* =========================
+   Main Image (3:4 FIXED)
+========================= */
+
+.main-image-wrapper{
+  width:100%;
+  aspect-ratio:3 / 4;
+  overflow:hidden;
+  border-radius:16px;
+  background:#f3f3f3;
 }
 
-.page-btn:disabled {
-  background: #e0d8d0;
-  color: #a39c97;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
+.main-image{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
 }
 
-.page-info {
-  font-size: 16px;
-  font-weight: 700;
-  color: #3b2b26;
-  min-width: 60px;
-  text-align: center;
+/* =========================
+   Thumbnail
+========================= */
+
+.thumbnail-list{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+  flex-wrap:wrap;
 }
 
-.btn-delete-admin {
-  background: #ffebee;
-  color: #d32f2f;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s;
+.thumbnail{
+  width:70px;
+  height:90px;
+  object-fit:cover;
+  border-radius:8px;
+  cursor:pointer;
+  border:2px solid transparent;
+  transition:0.2s;
 }
-.btn-delete-admin:hover {
-  background: #ffcdd2;
+
+.thumbnail:hover{
+  transform:scale(1.05);
 }
+
+.thumbnail.active{
+  border-color:#C89F8A;
+}
+
+.back-button{
+  display:flex;
+  align-items:center;
+  cursor:pointer;
+  margin-top: 10px;
+  margin-left: 5%;
+}
+
+.back-icon{
+  width:32px;
+  height:32px;
+  object-fit:contain;
+}
+
+/* =========================
+   Provider Details
+========================= */
+
+.details-section{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.specialty{
+  font-size:24px;
+  font-weight:700;
+  color:#3b2b26;
+}
+
+/* ===== FIX ตรงนี้ ===== */
+
+.stats{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  font-size:14px;
+  color:#666;
+}
+
+.stat-item{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.stat-icon{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+}
+
+.price{
+  margin-left:auto;
+  font-size:20px;
+  font-weight:700;
+  color:#C89F8A;
+}
+
+/* =========================
+   Bio
+========================= */
+
+.bio-box{
+  background:#faf8f5;
+  padding:16px;
+  border-radius:12px;
+  line-height:1.6;
+}
+
+/* =========================
+   Profile Row
+========================= */
+
+.profile-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.avatar{
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.name-info{
+  display:flex;
+  flex-direction:column;
+}
+
+.name{
+  font-weight:700;
+}
+
+.role{
+  font-size:13px;
+  color:#777;
+}
+
+/* =========================
+   Reviews Section
+========================= */
+
+.reviews-section{
+  grid-column:1 / -1;
+  margin-top:50px;
+}
+
+.review-card{
+  background:white;
+  border:1px solid #eee;
+  border-radius:12px;
+  padding:16px;
+  margin-top:14px;
+}
+
+.rev-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.rev-avatar{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.rev-name{
+  display:flex;
+  flex-direction:column;
+}
+
+.stars{
+  color:#f5b50a;
+  font-size:14px;
+}
+
+.rev-comment{
+  margin-top:10px;
+  line-height:1.6;
+}
+
+.edited-timestamp{
+  color:#999;
+  font-size:12px;
+}
+
+/* =========================
+   Review Form
+========================= */
+
+.review-form-box{
+  margin-top:20px;
+  background:#faf8f5;
+  padding:16px;
+  border-radius:12px;
+}
+
+.rating-select{
+  margin-bottom:10px;
+}
+
+.char-counter{
+  font-size:12px;
+  text-align:right;
+  color:#999;
+}
+
+/* =========================
+   Pagination
+========================= */
+
+.pagination-wrapper{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:20px;
+  margin-top:30px;
+}
+
+.page-btn{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:none;
+  background:#C89F8A;
+  color:white;
+  font-size:18px;
+  cursor:pointer;
+}
+
+.page-btn:disabled{
+  background:#ddd;
+}
+
+.page-info{
+  font-weight:600;
+}
+
+/* =========================
+   Admin Delete
+========================= */
+
+.btn-delete-admin{
+  background:#ffebee;
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  color:#d32f2f;
+  font-size:12px;
+}
+
+/* =========================
+   Loading
+========================= */
+
+.loading{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-top:80px;
+  gap:10px;
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width:900px){
+
+.content{
+  grid-template-columns:1fr;
+}
+
+.gallery-section{
+  max-width:420px;
+  margin:auto;
+}
+
+.stats{
+  flex-wrap:wrap;
+}
+
+.price{
+  margin-left:0;
+}
+
+}
+
 </style>

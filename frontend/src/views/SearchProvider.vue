@@ -21,7 +21,85 @@ const selectedRoles = ref<string[]>(['makeup', 'photographer']);
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
 const selectedProvinces = ref<string[]>([]);
-const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'กรุงเทพมหานคร'];
+const provinces = [
+'Krabi',
+'Kanchanaburi',
+'Kalasin',
+'Kamphaeng Phet',
+'Khon Kaen',
+'Chanthaburi',
+'Chachoengsao',
+'Chonburi',
+'Chainat',
+'Chaiyaphum',
+'Chumphon',
+'Chiang Rai',
+'Chiang Mai',
+'Trang',
+'Trat',
+'Tak',
+'Nakhon Nayok',
+'Nakhon Pathom',
+'Nakhon Phanom',
+'Nakhon Ratchasima',
+'Nakhon Si Thammarat',
+'Nakhon Sawan',
+'Nonthaburi',
+'Narathiwat',
+'Nan',
+'Bueng Kan',
+'Buriram',
+'Pathum Thani',
+'Prachuap Khiri Khan',
+'Prachinburi',
+'Pattani',
+'Phra Nakhon Si Ayutthaya',
+'Phayao',
+'Phang Nga',
+'Phatthalung',
+'Phichit',
+'Phitsanulok',
+'Phetchaburi',
+'Phetchabun',
+'Phrae',
+'Phuket',
+'Maha Sarakham',
+'Mukdahan',
+'Mae Hong Son',
+'Yasothon',
+'Yala',
+'Roi Et',
+'Ranong',
+'Rayong',
+'Ratchaburi',
+'Lopburi',
+'Lampang',
+'Lamphun',
+'Loei',
+'Sisaket',
+'Sakon Nakhon',
+'Songkhla',
+'Satun',
+'Samut Prakan',
+'Samut Songkhram',
+'Samut Sakhon',
+'Sa Kaeo',
+'Saraburi',
+'Sing Buri',
+'Sukhothai',
+'Suphan Buri',
+'Surat Thani',
+'Surin',
+'Nong Khai',
+'Nong Bua Lamphu',
+'Ang Thong',
+'Amnat Charoen',
+'Udon Thani',
+'Uttaradit',
+'Uthai Thani',
+'Ubon Ratchathani',
+'Bangkok'
+];
 
 const activeFilters = ref({
   roles: ['makeup', 'photographer'],
@@ -215,25 +293,25 @@ onUnmounted(() => {
           </div>
 
           <div v-if="showFilter" class="filter-dropdown">
-            <h4>ประเภทช่าง</h4>
+            <h4>Type of Service</h4>
             <div class="checkbox-group">
-              <label><input type="checkbox" value="makeup" v-model="selectedRoles"> ช่างแต่งหน้า</label>
-              <label><input type="checkbox" value="photographer" v-model="selectedRoles"> ช่างภาพ</label>
+              <label><input type="checkbox" value="makeup" v-model="selectedRoles"> Makeup Artist</label>
+              <label><input type="checkbox" value="photographer" v-model="selectedRoles"> Photographer</label>
             </div>
 
-            <h4>ช่วงราคา (บาท)</h4>
+            <h4>Price Range (THB)</h4>
             <div class="price-range">
-              <input type="number" v-model="minPrice" placeholder="ต่ำสุด" /> 
+              <input type="number" v-model="minPrice" placeholder="Minimum" /> 
               <span class="price-separator">-</span>
-              <input type="number" v-model="maxPrice" placeholder="สูงสุด" />
+              <input type="number" v-model="maxPrice" placeholder="Maximum" />
             </div>
 
-            <h4>จังหวัดที่รับงาน</h4>
+            <h4>Provinces</h4>
             <div class="province-search-container" ref="provinceContainerRef"> 
               <input 
                 type="text" 
                 v-model="provinceSearch" 
-                placeholder="พิมพ์ชื่อจังหวัดเพื่อค้นหา..." 
+                placeholder="Type province name to search..." 
                 @focus="isProvinceDropdownOpen = true" 
                 @blur="closeProvinceDropdown"
               />
@@ -252,8 +330,8 @@ onUnmounted(() => {
             </div>
 
             <div class="filter-actions">
-              <ion-button fill="outline" class="btn-clear" @click="clearFilter" style="--color: #C89F8A; --border-color: #C89F8A; margin: 0;">ล้างค่า</ion-button>
-              <ion-button class="btn-apply" @click="applyFilter" style="--background: #C89F8A; margin: 0;">นำไปใช้</ion-button>
+              <ion-button fill="outline" class="btn-clear" @click="clearFilter" style="--color: #C89F8A; --border-color: #C89F8A; margin: 0;">Clear</ion-button>
+              <ion-button class="btn-apply" @click="applyFilter" style="--background: #C89F8A; margin: 0;">Apply it</ion-button>
             </div>
           </div>
         </div>
@@ -261,19 +339,19 @@ onUnmounted(() => {
         <div class="provider-list" ref="providerListRef">
           <div v-if="isLoading" class="loading">
              <ion-spinner name="crescent" color="medium"></ion-spinner>
-             <p style="margin-top: 10px;">กำลังโหลดข้อมูล...</p>
+             <p style="margin-top: 10px;">Loading data...</p>
           </div>
-          <div v-else-if="filteredProviders.length === 0" class="empty">ไม่พบช่างที่ตรงกับเงื่อนไข</div>
+          <div v-else-if="filteredProviders.length === 0" class="empty">No providers found matching the criteria</div>
           
           <div v-for="provider in paginatedProviders" :key="provider.id" class="provider-card" @click="router.push(`/provider/${provider.id}`)">
             <img :src="provider.provider_info?.portfolios?.[0] || 'https://via.placeholder.com/390x200'" class="cover-img" />
             
             <div class="card-body">
-              <div class="specialty">{{ provider.provider_info?.specialty || 'รับงานทั่วไป' }}</div>
+              <div class="specialty">{{ provider.provider_info?.specialty || 'General Services' }}</div>
               
               <div class="row-info">
-                <span class="role-badge">{{ provider.provider_info?.service_type === 'makeup' ? '💄 ช่างแต่งหน้า' : '📸 ช่างภาพ' }}</span>
-                <span class="price">เริ่มต้น {{ provider.provider_info?.price_start || 0 }} ฿</span>
+                <span class="role-badge">{{ provider.provider_info?.service_type === 'makeup' ? 'Makeup Artist' : 'Photographer' }}</span>
+                <span class="price">Starting at {{ provider.provider_info?.price_start || 0 }} ฿</span>
               </div>
 
               <div class="row-info bottom-row">
@@ -282,8 +360,14 @@ onUnmounted(() => {
                   <span class="name">{{ provider.full_name }}</span>
                 </div>
                 <div class="stats">
-                  <span>💼 Sold {{ provider.provider_info?.sold_count || 0 }}</span>
-                  <span>⭐ {{ provider.provider_info?.rating_avg || '0.0' }}</span>
+                  <span>
+                    <img src="/images/sold.png" class="stat-icon" />
+                    Sold {{ provider.provider_info?.sold_count || 0 }} times
+                  </span>
+                  <span>
+                    <img src="/images/star.png" class="stat-icon" />
+                    {{ provider.provider_info?.rating_avg || '0.0' }}
+                  </span>
                 </div>
               </div>
             </div>
@@ -366,5 +450,66 @@ onUnmounted(() => {
   color: #3b2b26;
   min-width: 60px;
   text-align: center;
+}
+
+/* =========================
+   แก้ไข: Layout การ์ด
+   Desktop = 4 columns
+   Mobile = 2 columns
+========================= */
+
+.provider-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* แก้เป็น 4 คอลัมน์ */
+  gap: 16px;
+}
+
+.stat-icon{
+  width:16px;
+  height:16px;
+  object-fit:contain;
+  vertical-align:middle;
+  margin-right:4px;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .provider-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .provider-list {
+    grid-template-columns: repeat(2, 1fr); /* มือถือ 2 คอลัมน์ */
+  }
+}
+
+.provider-card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.provider-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.14);
+}
+
+/* =========================
+   แก้ไข: รูปการ์ดเป็น 3:4
+========================= */
+
+.cover-img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  display: block;
 }
 </style>

@@ -122,10 +122,11 @@ const handleLogin = async () => {
 }
 
 .custom-ion-input {
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 15px;
-  --padding-bottom: 15px;
+  --padding-start: 0px;
+  --inner-padding-start: 0px;
+  --inner-padding-end: 0px;
+  text-align: left;
+
   border-bottom: 1px solid #555;
   font-size: 15px;
   margin-bottom: 10px;

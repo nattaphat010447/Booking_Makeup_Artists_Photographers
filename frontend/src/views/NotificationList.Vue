@@ -68,14 +68,14 @@ const deleteNotification = async (id: string, event: Event) => {
     <ion-content class="custom-content">
       <div class="page-container">
         <div class="header">
-          <h2>🔔 การแจ้งเตือน</h2>
+          <h2>Notification</h2>
         </div>
 
         <div v-if="isLoading" class="loading">
           <ion-spinner name="crescent" color="medium"></ion-spinner>
-          <p>กำลังโหลด...</p>
+          <p>Loading...</p>
         </div>
-        <div v-else-if="notifications.length === 0" class="empty">ไม่มีการแจ้งเตือน</div>
+        <div v-else-if="notifications.length === 0" class="empty">No notifications available</div>
 
         <div v-else class="noti-list">
           <div 

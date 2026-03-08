@@ -5,7 +5,7 @@ import Navbar from '../components/layout/Navbar.vue';
 import { auth, db } from '../config/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, updatePassword } from 'firebase/auth';
-import { IonPage, IonContent, IonInput, IonSelect, IonSelectOption, IonTextarea, IonButton, IonSpinner } from '@ionic/vue';
+import { IonPage, IonContent, IonSelect, IonSelectOption, IonButton, IonSpinner } from '@ionic/vue';
 
 const router = useRouter();
 
@@ -39,7 +39,85 @@ const soldCount = ref(0);
 const portfolioPreviews = ref<(string | null)[]>([null, null, null, null, null, null]);
 const newPortfolioImages = ref<(File | null)[]>([null, null, null, null, null, null]);
 
-const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'กรุงเทพมหานคร'];
+const provinces = [
+'Krabi',
+'Kanchanaburi',
+'Kalasin',
+'Kamphaeng Phet',
+'Khon Kaen',
+'Chanthaburi',
+'Chachoengsao',
+'Chonburi',
+'Chainat',
+'Chaiyaphum',
+'Chumphon',
+'Chiang Rai',
+'Chiang Mai',
+'Trang',
+'Trat',
+'Tak',
+'Nakhon Nayok',
+'Nakhon Pathom',
+'Nakhon Phanom',
+'Nakhon Ratchasima',
+'Nakhon Si Thammarat',
+'Nakhon Sawan',
+'Nonthaburi',
+'Narathiwat',
+'Nan',
+'Bueng Kan',
+'Buriram',
+'Pathum Thani',
+'Prachuap Khiri Khan',
+'Prachinburi',
+'Pattani',
+'Phra Nakhon Si Ayutthaya',
+'Phayao',
+'Phang Nga',
+'Phatthalung',
+'Phichit',
+'Phitsanulok',
+'Phetchaburi',
+'Phetchabun',
+'Phrae',
+'Phuket',
+'Maha Sarakham',
+'Mukdahan',
+'Mae Hong Son',
+'Yasothon',
+'Yala',
+'Roi Et',
+'Ranong',
+'Rayong',
+'Ratchaburi',
+'Lopburi',
+'Lampang',
+'Lamphun',
+'Loei',
+'Sisaket',
+'Sakon Nakhon',
+'Songkhla',
+'Satun',
+'Samut Prakan',
+'Samut Songkhram',
+'Samut Sakhon',
+'Sa Kaeo',
+'Saraburi',
+'Sing Buri',
+'Sukhothai',
+'Suphan Buri',
+'Surat Thani',
+'Surin',
+'Nong Khai',
+'Nong Bua Lamphu',
+'Ang Thong',
+'Amnat Charoen',
+'Udon Thani',
+'Uttaradit',
+'Uthai Thani',
+'Ubon Ratchathani',
+'Bangkok'
+];
 
 // ================= Functions =================
 
@@ -125,13 +203,13 @@ const uploadToCloudinary = async (file: File | null): Promise<string> => {
 
 const handleSave = async () => {
   isSaving.value = true;
-  saveMessage.value = 'กำลังบันทึกข้อมูล...';
+  saveMessage.value = 'Saving data...';
   
   try {
     let currentProfileUrl = profilePreview.value;
     
     if (newProfileImage.value) {
-      saveMessage.value = 'กำลังอัปโหลดรูปโปรไฟล์...';
+      saveMessage.value = 'Uploading profile picture...';
       currentProfileUrl = await uploadToCloudinary(newProfileImage.value);
     }
 
@@ -143,7 +221,7 @@ const handleSave = async () => {
     };
 
     if (role.value === 'provider') {
-      saveMessage.value = 'กำลังจัดการรูปผลงาน...';
+      saveMessage.value = 'Updating portfolio images...';
       
       let updatedPortfolios = [...portfolioPreviews.value]; 
       
@@ -168,19 +246,19 @@ const handleSave = async () => {
       };
     }
 
-    saveMessage.value = 'กำลังบันทึกลงระบบ...';
+    saveMessage.value = 'Saving data to the system...';
     await updateDoc(doc(db, 'users', uid.value), updateData);
 
     if (newPassword.value && auth.currentUser) {
-      saveMessage.value = 'กำลังเปลี่ยนรหัสผ่าน...';
+      saveMessage.value = 'Changing password...';
       await updatePassword(auth.currentUser, newPassword.value);
       newPassword.value = ''; 
     }
 
-    alert('บันทึกข้อมูลเรียบร้อยแล้ว!');
+    alert('Data successfully saved!');
   } catch (error: any) {
     console.error(error);
-    alert('เกิดข้อผิดพลาด: ' + (error.message || 'กรุณาลองใหม่'));
+    alert('An error occurred: ' + (error.message || 'Please try again'));
   } finally {
     isSaving.value = false;
     saveMessage.value = '';
@@ -197,76 +275,76 @@ const handleSave = async () => {
         
         <div v-if="isLoading" class="loading">
           <ion-spinner name="crescent" color="medium"></ion-spinner>
-          <p>กำลังโหลดข้อมูลของคุณ...</p>
+          <p>Loading your data...</p>
         </div>
 
         <div v-else class="profile-editor">
-          <h2>จัดการโปรไฟล์</h2>
+          <h2>Manage Profile</h2>
 
           <form @submit.prevent="handleSave">
             
             <div class="section-card">
-              <h3>ข้อมูลส่วนตัว</h3>
+              <h3>Personal Information</h3>
               
               <div class="profile-upload">
                 <div class="preview-box">
                   <img :src="profilePreview" alt="Profile" class="img-preview" />
                 </div>
                 <label class="btn-change-img">
-                  เปลี่ยนรูปภาพ
+                  Change Profile Image
                   <input type="file" accept="image/*" class="hidden" @change="handleProfileImage" :disabled="isSaving" />
                 </label>
               </div>
 
               <div class="input-group">
-                <label>อีเมล:</label>
-                <ion-input type="email" :value="email" disabled class="custom-ion-input disabled-input"></ion-input>
+                <label>Email:</label>
+                <input type="email" :value="email" disabled class="custom-input disabled-input" />
               </div>
 
               <div class="input-group">
-                <label>ชื่อ-นามสกุล:</label>
-                <ion-input v-model="fullName" type="text" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+                <label>Full Name:</label>
+                <input v-model="fullName" type="text" class="custom-input" required :disabled="isSaving" />
               </div>
 
               <div class="input-group">
-                <label>เบอร์โทรศัพท์:</label>
-                <ion-input v-model="phone" type="tel" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+                <label>Phone Number:</label>
+                <input v-model="phone" type="tel" class="custom-input" required :disabled="isSaving" />
               </div>
 
               <div class="input-group">
-                <label>เปลี่ยนรหัสผ่านใหม่:</label>
-                <ion-input v-model="newPassword" type="password" placeholder="รหัสผ่านใหม่ (ไม่บังคับ)" class="custom-ion-input" :minlength="6" :disabled="isSaving"></ion-input>
-                <small class="hint">* การเปลี่ยนรหัสผ่านอาจจะต้องทำการ Login ใหม่อีกครั้ง</small>
+                <label>Change Password:</label>
+                <input v-model="newPassword" type="password" placeholder="New Password (Optional)" class="custom-input" minlength="6" :disabled="isSaving" />
+                <small class="hint">* Changing your password may require you to log in again</small>
               </div>
             </div>
 
             <div v-if="role === 'provider'" class="section-card">
-              <h3>ข้อมูลผู้ให้บริการ (Portfolio & Bio)</h3>
+              <h3>Service provider information (Portfolio & Bio)</h3>
 
               <div class="input-group">
-                <label>ประเภทงานที่รับ:</label>
-                <ion-input v-model="specialty" type="text" placeholder="เช่น Cosplay Makeup..." class="custom-ion-input" :disabled="isSaving"></ion-input>
+                <label>Types of work accepted:</label>
+                <input v-model="specialty" type="text" placeholder="เช่น Cosplay Makeup..." class="custom-input" :disabled="isSaving" />
               </div>
 
               <div class="input-group">
-                <label>ราคาเริ่มต้น (บาท):</label>
-                <ion-input v-model="priceStart" type="number" min="0" class="custom-ion-input" required :disabled="isSaving"></ion-input>
+                <label>Starting Price (THB):</label>
+                <input v-model="priceStart" type="number" min="0" class="custom-input" required :disabled="isSaving" />
               </div>
 
               <div class="input-group">
-                <label>จังหวัดที่รับงาน:</label>
+                <label>Provinces Where You Work:</label>
                 <ion-select v-model="location" class="custom-ion-select" interface="popover" required :disabled="isSaving">
                   <ion-select-option v-for="prov in provinces" :key="prov" :value="prov">{{ prov }}</ion-select-option>
                 </ion-select>
               </div>
 
               <div class="input-group">
-                <label>Bio (แนะนำตัว):</label>
-                <ion-textarea v-model="bio" :rows="4" class="custom-ion-textarea" :disabled="isSaving"></ion-textarea>
+                <label>Bio (introduce yourself):</label>
+                <textarea v-model="bio" rows="4" class="custom-input custom-textarea" :disabled="isSaving"></textarea>
               </div>
 
               <div class="input-group">
-                <label>แก้ไขรูปผลงาน (Portfolio):</label>
+                <label>Edit Portfolio Images:</label>
                 <div class="portfolio-grid">
                   <div v-for="index in 6" :key="index" class="portfolio-item">
                     <label :for="'edit-portfolio-' + index" class="upload-area">
@@ -276,7 +354,7 @@ const handleSave = async () => {
                     <input :id="'edit-portfolio-' + index" type="file" accept="image/*" class="hidden" @change="(e) => handlePortfolioImage(e, index-1)" :disabled="isSaving" />
                   </div>
                 </div>
-                <small class="hint">คลิกที่รูปเพื่ออัปโหลดทับรูปเดิม</small>
+                <small class="hint">Click on the image to overwrite the existing image</small>
               </div>
             </div>
 
@@ -285,7 +363,7 @@ const handleSave = async () => {
                 <ion-spinner name="crescent"></ion-spinner>
                 <span>{{ saveMessage }}</span>
               </div>
-              <span v-else>บันทึกการเปลี่ยนแปลง</span>
+              <span v-else>Save Changes</span>
             </ion-button>
           </form>
         </div>
@@ -315,23 +393,51 @@ const handleSave = async () => {
 .input-group { margin-bottom: 20px; text-align: left; }
 .input-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; color: #444; }
 
-.custom-ion-input, .custom-ion-select, .custom-ion-textarea {
+.custom-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: white;
+  border: 1px solid #e0d8d0;
+  border-radius: 0;
+  font-size: 15px;
+  min-height: 48px;
+  font-family: inherit;
+  color: #3b2b26;
+  box-sizing: border-box;
+  transition: 0.2s;
+  outline: none;
+}
+
+.custom-input:focus {
+  border-color: #C89F8A;
+}
+
+.custom-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.custom-ion-select {
   --padding-start: 16px;
   --padding-end: 16px;
   --padding-top: 14px;
   --padding-bottom: 14px;
-  --background: #faf8f5;
+  --background: white;
+  --highlight-height: 0;
+  --border-width: 0;
+  --box-shadow: none;
   border: 1px solid #e0d8d0;
-  border-radius: 12px;
+  border-radius: 0;
   font-size: 15px;
+  min-height: 48px;
   transition: 0.2s;
 }
 
-.custom-ion-input.ion-focused, .custom-ion-select.ion-focused, .custom-ion-textarea.ion-focused {
+.custom-ion-select.ion-focused {
   border-color: #C89F8A;
 }
 
-.disabled-input { --background: #f0ebe6; opacity: 0.7; }
+.disabled-input { background: #f0ebe6; opacity: 0.7; }
 .hint { font-size: 12px; color: #C89F8A; margin-top: 8px; display: block; }
 
 .portfolio-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px; }

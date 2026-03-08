@@ -23,7 +23,7 @@ onMounted(() => {
       if (!userDoc.empty && userDoc.docs[0]?.data()?.role === 'admin') {
         fetchAllData();
       } else {
-        alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้');
+        alert('You do not have permission to access this page.');
         router.push('/');
       }
     } else {
@@ -52,41 +52,41 @@ const fetchAllData = async () => {
 
 // ================= Actions: จัดการ Users =================
 const changeUserRole = async (userId: string, currentRole: string) => {
-  const newRole = prompt('พิมพ์ Role ที่ต้องการเปลี่ยน:', currentRole);
+  const newRole = prompt('Type the Role you want to change:', currentRole);
   if (newRole && ['customer', 'provider', 'admin'].includes(newRole)) {
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
-      alert('อัปเดต Role สำเร็จ!');
+      alert('Role update successful!');
       fetchAllData(); // โหลดข้อมูลใหม่
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการอัปเดต');
+      alert('An error occurred during the update.');
     }
   } else if (newRole) {
-    alert('Role ไม่ถูกต้อง (ต้องเป็น customer, provider หรือ admin เท่านั้น)');
+    alert('The role is incorrect (it must be customer, provider, or admin).');
   }
 };
 
 const deleteUser = async (userId: string) => {
-  if (confirm('⚠️ แน่ใจหรือไม่ที่จะลบผู้ใช้นี้ออกจากระบบ? (การลบใน Firestore)')) {
+  if (confirm('Are you sure you want to delete this user from the system? (Deletion in Firestore)')) {
     try {
       await deleteDoc(doc(db, 'users', userId));
-      alert('ลบผู้ใช้งานสำเร็จ');
+      alert('User deleted successfully.');
       fetchAllData();
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการลบผู้ใช้งาน');
+      alert('An error occurred while deleting the user.');
     }
   }
 };
 
 // ================= Actions: จัดการ Reviews =================
 const deleteReviewAdmin = async (reviewId: string) => {
-  if (confirm('🗑️ แน่ใจหรือไม่ที่จะลบรีวิวนี้?')) {
+  if (confirm('Are you sure you want to delete this review?')) {
     try {
       await deleteDoc(doc(db, 'reviews', reviewId));
-      alert('ลบรีวิวสำเร็จ');
+      alert('Review deleted successfully.');
       fetchAllData();
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการลบรีวิว');
+      alert('An error occurred while deleting the review.');
     }
   }
 };
@@ -99,63 +99,72 @@ const deleteReviewAdmin = async (reviewId: string) => {
     <div class="admin-header">
       <ion-segment v-model="currentTab" class="custom-segment">
         <ion-segment-button value="stats">
-          <ion-label>📊 สถิติ</ion-label>
+          <ion-label class="segment-label">
+            <img src="/images/statistic.png" class="segment-icon" />
+            statistics
+          </ion-label>
         </ion-segment-button>
         <ion-segment-button value="users">
-          <ion-label>👥 จัดการผู้ใช้</ion-label>
+          <ion-label class="segment-label">
+            <img src="/images/manageUser.png" class="segment-icon" />
+            Manage users
+          </ion-label>
         </ion-segment-button>
         <ion-segment-button value="reviews">
-          <ion-label>⭐ รีวิว</ion-label>
+          <ion-label class="segment-label">
+            <img src="/images/reviews.png" class="segment-icon" />
+            reviews
+          </ion-label>
         </ion-segment-button>
-      </ion-segment>
+              </ion-segment>
     </div>
 
     <ion-content class="admin-content">
       <div v-if="isLoading" class="loading">
         <ion-spinner name="crescent" color="medium"></ion-spinner>
-        <p>กำลังโหลดข้อมูลระบบ...</p>
+        <p>Loading system data...</p>
       </div>
 
       <div v-else class="container">
         
         <div v-if="currentTab === 'stats'" class="tab-content">
-          <h2>ภาพรวมระบบ (Overview)</h2>
+          <h2>System Overview</h2>
           <div class="stats-grid">
             <div class="stat-card">
-              <h3>ผู้ใช้งานทั้งหมด</h3>
+              <h3>Total Users</h3>
               <div class="number">{{ users.length }}</div>
             </div>
             <div class="stat-card">
-              <h3>ลูกค้า (Customers)</h3>
+              <h3>Customers</h3>
               <div class="number">{{ users.filter(u => u.role === 'customer').length }}</div>
             </div>
             <div class="stat-card">
-              <h3>ช่าง (Providers)</h3>
+              <h3>Providers</h3>
               <div class="number">{{ users.filter(u => u.role === 'provider').length }}</div>
             </div>
             <div class="stat-card">
-              <h3>แอดมิน (Admins)</h3>
+              <h3>Admins</h3>
               <div class="number">{{ users.filter(u => u.role === 'admin').length }}</div>
             </div>
             <div class="stat-card highlight">
-              <h3>รีวิวในระบบทั้งหมด</h3>
+              <h3>All Reviews</h3>
               <div class="number">{{ reviews.length }}</div>
             </div>
           </div>
         </div>
 
         <div v-if="currentTab === 'users'" class="tab-content">
-          <h2>รายชื่อผู้ใช้งาน ({{ users.length }})</h2>
-          
+          <h2>User List ({{ users.length }})</h2>
+
           <div class="table-responsive">
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>รูป</th>
-                  <th>ชื่อ-นามสกุล</th>
-                  <th>อีเมล</th>
-                  <th>บทบาท (Role)</th>
-                  <th>การจัดการ</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,8 +177,8 @@ const deleteReviewAdmin = async (reviewId: string) => {
                   </td>
                   <td>
                     <div class="action-buttons">
-                      <button class="btn-edit" @click="changeUserRole(u.id, u.role)">เปลี่ยน Role</button>
-                      <button class="btn-delete" @click="deleteUser(u.id)" :disabled="u.role === 'admin'">ลบ</button>
+                      <button class="btn-edit" @click="changeUserRole(u.id, u.role)">Change Role</button>
+                      <button class="btn-delete" @click="deleteUser(u.id)" :disabled="u.role === 'admin'">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -179,16 +188,15 @@ const deleteReviewAdmin = async (reviewId: string) => {
         </div>
 
         <div v-if="currentTab === 'reviews'" class="tab-content">
-          <h2>ตรวจสอบรีวิว ({{ reviews.length }})</h2>
-
+          <h2>Review Management ({{ reviews.length }})</h2>
           <div class="table-responsive">
             <table class="admin-table">
               <thead>
                 <tr>
-                  <th>ผู้รีวิว</th>
-                  <th>คะแนน</th>
-                  <th>ข้อความคอมเมนต์</th>
-                  <th>การจัดการ</th>
+                  <th>Reviewer</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -202,7 +210,7 @@ const deleteReviewAdmin = async (reviewId: string) => {
                   <td style="color: #f5b041; font-size: 14px;">{{ '⭐'.repeat(rev.rating) }}</td>
                   <td class="comment-col">"{{ rev.comment }}"</td>
                   <td>
-                    <button class="btn-delete" @click="deleteReviewAdmin(rev.id)">ลบทิ้ง</button>
+                    <button class="btn-delete" @click="deleteReviewAdmin(rev.id)">Delete</button>
                   </td>
                 </tr>
               </tbody>
@@ -227,6 +235,21 @@ const deleteReviewAdmin = async (reviewId: string) => {
 .custom-segment {
   --background: #faf8f5;
 }
+
+/* ===== segment icon size ===== */
+.segment-label{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.segment-icon{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+}
+/* ============================ */
 
 .admin-content {
   --background: #FAFAFA;

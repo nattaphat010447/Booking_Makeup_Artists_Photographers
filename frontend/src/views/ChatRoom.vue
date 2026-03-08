@@ -39,7 +39,7 @@ const lastMyMessageId = computed(() => {
 // ================= Functions =================
 onMounted(async () => {
   if (!currentUser) {
-    alert('กรุณาเข้าสู่ระบบ');
+    alert('Please log in');
     router.push('/login');
     return;
   }
@@ -101,7 +101,7 @@ const sendMessage = async () => {
 
 const sendQuotation = async () => {
   if (!quotePrice.value || !quoteWorkDate.value) {
-    alert('กรุณากรอกราคาและวันที่ให้ครบถ้วน');
+    alert('Please fill in the price and date completely');
     return;
   }
   
@@ -211,9 +211,11 @@ const handleSlipUpload = async (e: Event, msg: any) => {
 <template>
   <ion-page>
     <div class="chat-header">
-      <button class="back-btn" @click="router.push('/chats')">←</button>
+      <button class="back-btn" @click="router.push('/chats')">
+        <img src="/images/back.png" alt="back" class="back-icon">
+      </button>
       <img :src="otherUser?.profile_image || 'https://via.placeholder.com/40'" class="avatar" />
-      <span class="name">{{ otherUser?.full_name || 'กำลังโหลด...' }}</span>
+      <span class="name">{{ otherUser?.full_name || 'Loading...' }}</span>
     </div>
 
     <ion-content ref="contentRef" class="custom-chat-content">
@@ -234,7 +236,7 @@ const handleSlipUpload = async (e: Event, msg: any) => {
           </div>
 
           <div v-if="msg.type === 'image'" class="action-bubble image-bubble">
-            <div class="action-label">🧾 หลักฐานการชำระเงิน</div>
+            <div class="action-label">Proof of payment</div>
             <img :src="msg.imageUrl" class="chat-image" />
           </div>
 
@@ -243,28 +245,28 @@ const handleSlipUpload = async (e: Event, msg: any) => {
           </div>
 
           <div v-if="msg.type === 'quotation'" class="action-bubble quote-bubble">
-            <div class="quote-header">📋 ใบเสนอราคา</div>
-            <p><strong>ผู้ให้บริการ:</strong> {{ msg.data.providerName }}</p>
-            <p><strong>ผู้รับบริการ:</strong> {{ msg.data.customerName }}</p>
-            <p><strong>ราคา:</strong> <span class="highlight">{{ msg.data.price }} ฿</span></p>
-            <p><strong>วันที่ทำการจอง:</strong> {{ msg.data.dateReserved }}</p>
-            <p><strong>วันที่ไปทำงาน:</strong> {{ msg.data.dateToWork }}</p>
+            <div class="quote-header">quotation</div>
+            <p><strong>Service provider:</strong> {{ msg.data.providerName }}</p>
+            <p><strong>Service recipient:</strong> {{ msg.data.customerName }}</p>
+            <p><strong>price:</strong> <span class="highlight">{{ msg.data.price }} ฿</span></p>
+            <p><strong>Booking date:</strong> {{ msg.data.dateReserved }}</p>
+            <p><strong>Working date:</strong> {{ msg.data.dateToWork }}</p>
             
             <div class="qr-box">
               <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" class="qr-mockup" alt="QR Code" />
-              <span class="qr-text">สแกนเพื่อชำระเงิน</span>
+              <span class="qr-text">Scan to pay</span>
             </div>
 
             <template v-if="msg.senderId !== myUid">
               <label v-if="msg.data.status !== 'paid'" class="btn-slip" :class="{ disabled: isUploadingSlip }">
                 <ion-spinner v-if="isUploadingSlip" name="dots"></ion-spinner>
-                <span v-else>📷 แนบสลิปชำระเงิน</span>
+                <span v-else>Attach the payment slip.</span>
                 <input type="file" accept="image/*" class="hidden" @change="(e) => handleSlipUpload(e, msg)" :disabled="isUploadingSlip" />
               </label>
-              <div v-else class="paid-status-box">✅ ชำระเงินเรียบร้อยแล้ว</div>
+              <div v-else class="paid-status-box">Payment has been completed.</div>
             </template>
             <template v-else>
-              <div v-if="msg.data.status === 'paid'" class="paid-status-box">✅ ลูกค้าชำระเงินเรียบร้อยแล้ว</div>
+              <div v-if="msg.data.status === 'paid'" class="paid-status-box">The customer has completed the payment.</div>
             </template>
           </div>
 
@@ -279,63 +281,159 @@ const handleSlipUpload = async (e: Event, msg: any) => {
     <ion-footer class="ion-no-border">
       <div class="chat-footer">
         <ion-button v-if="myRole === 'provider'" fill="clear" class="btn-quote" @click="showQuoteModal = true" style="--color: #3b2b26;">
-          📋
+          <img src="/images/quote.png" class="quote-icon" />
         </ion-button>
-        <ion-input v-model="newMessage" placeholder="พิมพ์ข้อความ..." class="custom-chat-input" @keyup.enter="sendMessage"></ion-input>
+        <ion-input v-model="newMessage" placeholder="Type a message..." class="custom-chat-input" @keyup.enter="sendMessage"></ion-input>
         <ion-button shape="round" class="btn-send" @click="sendMessage" style="--background: #C89F8A;">
-          ส่ง
+          <img slot="icon-only" src="/images/send.png" class="send-icon" />
         </ion-button>
       </div>
     </ion-footer>
 
     <div v-if="showQuoteModal" class="modal-overlay" @click.self="showQuoteModal = false">
       <div class="modal-box">
-        <h3>สร้างใบเสนอราคา</h3>
+        <h3>Create a quotation</h3>
         <div class="input-group">
-          <label>ราคา (บาท):</label>
-          <ion-input type="number" v-model="quotePrice" placeholder="1000" class="custom-ion-input"></ion-input>
+          <label>Price (THB):</label>
+          <ion-input type="number" v-model="quotePrice" placeholder="Enter price" class="custom-ion-input"></ion-input>
         </div>
         <div class="input-group">
-          <label>วันที่ไปทำงาน:</label>
+          <label>Working date:</label>
           <ion-input type="date" v-model="quoteWorkDate" class="custom-ion-input"></ion-input>
         </div>
         <div class="modal-actions">
-          <ion-button fill="outline" class="btn-cancel-modal" @click="showQuoteModal = false" style="--color: #555; --border-color: #ccc; flex: 1;">ยกเลิก</ion-button>
-          <ion-button class="btn-submit-modal" @click="sendQuotation" style="--background: #C89F8A; flex: 1;">ส่ง</ion-button>
+          <ion-button fill="outline" class="btn-cancel-modal" @click="showQuoteModal = false" style="--color: #555; --border-color: #ccc; flex: 1;">Cancel</ion-button>
+          <ion-button class="btn-submit-modal" @click="sendQuotation" style="--background: #C89F8A; flex: 1;">send</ion-button>
         </div>
       </div>
     </div>
   </ion-page>
 </template>
-
 <style scoped>
-.chat-header { 
-  display: flex; align-items: center; padding: 16px 20px; 
-  background: white; border-bottom: 1px solid rgba(0,0,0,0.05); 
+
+/* ================= HEADER ================= */
+.chat-header {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  background: white;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
   z-index: 10;
 }
-.back-btn { background: none; border: none; font-size: 24px; cursor: pointer; margin-right: 16px; color: #3b2b26; padding: 0; display: flex; align-items: center;}
-.avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; margin-right: 12px; }
-.name { font-weight: 600; font-size: 16px; flex: 1; text-align: left; color: #3b2b26;}
+
+.back-btn{
+  background:none;
+  border:none;
+  cursor:pointer;
+  padding:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  margin-right:12px;
+}
+
+.back-icon{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.send-icon{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 12px;
+}
+
+.name {
+  font-weight: 600;
+  font-size: 16px;
+  flex: 1;
+  text-align: left;
+  color: #3b2b26;
+}
+
+
+/* ================= CONTENT ================= */
 
 .custom-chat-content {
   --background: #FAFAFA;
+  padding-left: 12px;
+  padding-right: 12px;
 }
-.chat-messages { padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;}
 
-/* การจัด Layout ซ้าย-ขวา-กลาง */
-.message-wrapper { display: flex; flex-direction: column; }
-.message-wrapper.sent { align-items: flex-end; }
-.message-wrapper.received { align-items: flex-start; }
-.message-wrapper.system { align-items: center; margin: 12px 0;}
-.message-wrapper.action-card { align-items: center; margin: 24px 0;} /* จัดการ์ดไว้ตรงกลาง */
+.chat-messages {
+  padding: 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-/* บับเบิ้ลแชทปกติ */
-.bubble { max-width: 75%; padding: 14px 18px; border-radius: 18px; font-size: 15px; text-align: left; line-height: 1.5; box-shadow: 0 2px 6px rgba(0,0,0,0.03); word-break: break-word;}
-.text-bubble { background: white; color: #3b2b26; border-bottom-left-radius: 4px; border: 1px solid rgba(0,0,0,0.03);}
-.sent .text-bubble { background: #C89F8A; color: white; border-bottom-left-radius: 18px; border-bottom-right-radius: 4px; border: none;}
 
-/* ใบเสนอราคา และ สลิป */
+/* ================= MESSAGE LAYOUT ================= */
+
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.message-wrapper.sent {
+  align-items: flex-end;
+}
+
+.message-wrapper.received {
+  align-items: flex-start;
+}
+
+.message-wrapper.system {
+  align-items: center;
+  margin: 12px 0;
+}
+
+.message-wrapper.action-card {
+  align-items: center;
+  margin: 24px 0;
+}
+
+
+/* ================= TEXT BUBBLE ================= */
+
+.bubble {
+  max-width: 75%;
+  padding: 14px 18px;
+  border-radius: 18px;
+  font-size: 15px;
+  text-align: left;
+  line-height: 1.5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  word-break: break-word;
+}
+
+.text-bubble {
+  background: white;
+  color: #3b2b26;
+  border-bottom-left-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.03);
+}
+
+.sent .text-bubble {
+  background: #C89F8A;
+  color: white;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 4px;
+  border: none;
+}
+
+
+/* ================= ACTION BUBBLE ================= */
+
 .action-bubble {
   background: white;
   border-radius: 20px;
@@ -344,53 +442,232 @@ const handleSlipUpload = async (e: Event, msg: any) => {
   width: 100%;
 }
 
-.image-bubble { max-width: 280px; padding: 16px; display: flex; flex-direction: column; align-items: center;}
-.action-label { font-size: 13px; font-weight: 700; color: #8B7355; margin-bottom: 12px; text-align: center; background: #faf8f5; padding: 6px 16px; border-radius: 20px;}
-.chat-image { max-width: 100%; border-radius: 12px; object-fit: cover; display: block;}
+.image-bubble {
+  max-width: 280px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-.quote-bubble { max-width: 320px; padding: 24px; border: 2px solid #C89F8A; }
-.quote-header { font-weight: 700; font-size: 16px; color: #C89F8A; border-bottom: 1px solid #f0e6e1; padding-bottom: 12px; margin-bottom: 14px; text-align: center; }
-.quote-bubble p { margin: 6px 0; font-size: 14px; color: #3b2b26;}
-.highlight { font-weight: 700; color: #8B7355; font-size: 16px;}
-.qr-box { display: flex; flex-direction: column; align-items: center; margin-top: 20px; background: #faf8f5; padding: 16px; border-radius: 16px; border: 1px dashed #e0d8d0;}
-.qr-mockup { width: 130px; height: 130px; border-radius: 12px;}
-.qr-text { font-size: 12px; color: #8B7355; margin-top: 10px; font-weight: 500;}
+.action-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8B7355;
+  margin-bottom: 12px;
+  text-align: center;
+  background: #faf8f5;
+  padding: 6px 16px;
+  border-radius: 20px;
+}
 
-.btn-slip { display: block; width: 100%; text-align: center; padding: 14px; background: #3b2b26; color: white; border: none; border-radius: 12px; font-weight: 600; margin-top: 20px; cursor: pointer; box-sizing: border-box; transition: 0.2s; font-family: inherit;}
-.btn-slip:hover { background: #2a1e1b; }
-.btn-slip.disabled { background: #a8a09d; cursor: not-allowed; }
-.paid-status-box { margin-top: 20px; padding: 12px; background: #e9f5ec; color: #2e7d32; border-radius: 12px; text-align: center; font-weight: 600; font-size: 14px; border: 1px solid #c8e6c9;}
+.chat-image {
+  max-width: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
 
-/* Read receipt */
-.read-receipt { font-size: 11px; color: #a39c97; margin-top: 6px; margin-right: 6px; font-weight: 500;}
-.action-card .read-receipt { margin-right: 0; margin-top: 10px; text-align: center;}
 
-.system-message { background: #f0ebe6; color: #6b5a50; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 20px; text-align: center; }
+/* ================= QUOTE ================= */
 
-/* Chat Footer */
-.chat-footer { 
-  display: flex; align-items: center; padding: 16px 20px; 
-  background: white; gap: 12px; border-top: 1px solid rgba(0,0,0,0.05); 
+.quote-bubble {
+  max-width: 320px;
+  padding: 24px;
+  border: 2px solid #C89F8A;
+}
+
+.quote-header {
+  font-weight: 700;
+  font-size: 16px;
+  color: #C89F8A;
+  border-bottom: 1px solid #f0e6e1;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.quote-bubble p {
+  margin: 6px 0;
+  font-size: 14px;
+  color: #3b2b26;
+}
+
+.highlight {
+  font-weight: 700;
+  color: #8B7355;
+  font-size: 16px;
+}
+
+
+/* ===== เพิ่ม style รูปใน quotation ===== */
+
+.quote-image-box{
+  display:flex;
+  justify-content:center;
+  margin-bottom:16px;
+}
+
+.quote-image{
+  width:120px;
+  height:120px;
+  object-fit:contain;
+}
+
+
+/* ================= QR ================= */
+
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  background: #faf8f5;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px dashed #e0d8d0;
+}
+
+.qr-mockup {
+  width: 130px;
+  height: 130px;
+  border-radius: 12px;
+}
+
+.qr-text {
+  font-size: 12px;
+  color: #8B7355;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+
+/* ================= SLIP BUTTON ================= */
+
+.btn-slip {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 14px;
+  background: #3b2b26;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-top: 20px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: 0.2s;
+  font-family: inherit;
+}
+
+.btn-slip:hover {
+  background: #2a1e1b;
+}
+
+.btn-slip.disabled {
+  background: #a8a09d;
+  cursor: not-allowed;
+}
+
+.paid-status-box {
+  margin-top: 20px;
+  padding: 12px;
+  background: #e9f5ec;
+  color: #2e7d32;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1px solid #c8e6c9;
+}
+
+
+/* ================= SYSTEM ================= */
+
+.system-message {
+  background: #f0ebe6;
+  color: #6b5a50;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+
+/* ================= READ RECEIPT ================= */
+
+.read-receipt {
+  font-size: 11px;
+  color: #a39c97;
+  margin-top: 6px;
+  margin-right: 6px;
+  font-weight: 500;
+}
+
+.action-card .read-receipt {
+  margin-right: 0;
+  margin-top: 10px;
+  text-align: center;
+}
+
+
+/* ================= FOOTER ================= */
+
+.chat-footer {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  background: white;
+  gap: 12px;
+  border-top: 1px solid rgba(0,0,0,0.05);
   padding-bottom: max(16px, env(safe-area-inset-bottom));
 }
 
+
+/* ================= CHAT INPUT ================= */
 .custom-chat-input {
   flex: 1;
+
   --padding-start: 16px;
   --padding-end: 16px;
-  --background: #faf8f5;
+
+  --background: faf8f5;
   --border-radius: 25px;
-  border: 1px solid #e0d8d0;
+  border: 1px solid #F8F0E8;
   font-size: 15px;
   height: 48px;
 }
 
+/* ปิด native border ของ Ionic */
+.custom-chat-input::part(native) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* ปิด effect ตอน focus (แก้ปัญหากล่องซ้อน) */
+.custom-chat-input.ion-focused,
+.custom-chat-input.has-focus {
+  --border-width: 0 !important;
+  --box-shadow: none !important;
+  outline: none !important;
+}
+
+
+/* ================= MODAL INPUT ================= */
+
 .custom-ion-input {
   --padding-start: 10px;
   --padding-end: 10px;
-  --background: #faf8f5;
+  --background: white;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: none;
+  outline: none;
+  box-shadow: none;
   margin-bottom: 10px;
 }
+
 </style>
