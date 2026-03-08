@@ -89,7 +89,7 @@ const goToChat = (id: string) => {
             v-for="chat in chatRooms" 
             :key="chat.id" 
             button 
-            detail="false"
+            :detail="false"
             @click="goToChat(chat.id)" 
             class="chat-item"
           >
