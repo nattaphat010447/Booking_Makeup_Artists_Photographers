@@ -133,6 +133,7 @@ onMounted(() => {
   });
 });
 
+// ฟังชั่นนี้จะดึงข้อมูลผู้ใช้จาก Firestore และอัพเดต state ต่างๆ เพื่อแสดงในฟอร์มแก้ไขโปรไฟล์
 const fetchUserData = async (userId: string) => {
   try {
     const docRef = doc(db, 'users', userId);

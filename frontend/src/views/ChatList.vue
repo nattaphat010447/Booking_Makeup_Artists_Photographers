@@ -32,6 +32,7 @@ const fetchChatRooms = (myUid: string) => {
     where('participants', 'array-contains', myUid)
   );
 
+  // ฟังชั่นนี้จะดึงข้อมูลห้องแชททั้งหมดที่ผู้ใช้เป็นส่วนหนึ่งของมัน และสำหรับแต่ละห้องจะแยกหาผู้ใช้คนอื่น เพื่อดึงข้อมูลชื่อและรูปโปรไฟล์มาแสดงในหน้ารายการแชท
   unsubscribe = onSnapshot(q, async (snapshot) => {
     let roomsData: any[] = [];
     

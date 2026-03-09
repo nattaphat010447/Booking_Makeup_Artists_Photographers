@@ -21,85 +21,7 @@ const selectedRoles = ref<string[]>(['makeup', 'photographer']);
 const minPrice = ref<number | null>(null);
 const maxPrice = ref<number | null>(null);
 const selectedProvinces = ref<string[]>([]);
-const provinces = [
-'Krabi',
-'Kanchanaburi',
-'Kalasin',
-'Kamphaeng Phet',
-'Khon Kaen',
-'Chanthaburi',
-'Chachoengsao',
-'Chonburi',
-'Chainat',
-'Chaiyaphum',
-'Chumphon',
-'Chiang Rai',
-'Chiang Mai',
-'Trang',
-'Trat',
-'Tak',
-'Nakhon Nayok',
-'Nakhon Pathom',
-'Nakhon Phanom',
-'Nakhon Ratchasima',
-'Nakhon Si Thammarat',
-'Nakhon Sawan',
-'Nonthaburi',
-'Narathiwat',
-'Nan',
-'Bueng Kan',
-'Buriram',
-'Pathum Thani',
-'Prachuap Khiri Khan',
-'Prachinburi',
-'Pattani',
-'Phra Nakhon Si Ayutthaya',
-'Phayao',
-'Phang Nga',
-'Phatthalung',
-'Phichit',
-'Phitsanulok',
-'Phetchaburi',
-'Phetchabun',
-'Phrae',
-'Phuket',
-'Maha Sarakham',
-'Mukdahan',
-'Mae Hong Son',
-'Yasothon',
-'Yala',
-'Roi Et',
-'Ranong',
-'Rayong',
-'Ratchaburi',
-'Lopburi',
-'Lampang',
-'Lamphun',
-'Loei',
-'Sisaket',
-'Sakon Nakhon',
-'Songkhla',
-'Satun',
-'Samut Prakan',
-'Samut Songkhram',
-'Samut Sakhon',
-'Sa Kaeo',
-'Saraburi',
-'Sing Buri',
-'Sukhothai',
-'Suphan Buri',
-'Surat Thani',
-'Surin',
-'Nong Khai',
-'Nong Bua Lamphu',
-'Ang Thong',
-'Amnat Charoen',
-'Udon Thani',
-'Uttaradit',
-'Uthai Thani',
-'Ubon Ratchathani',
-'Bangkok'
-];
+const provinces = ['กระบี่', 'กาญจนบุรี', 'กาฬสินธุ์', 'กำแพงเพชร', 'ขอนแก่น', 'จันทบุรี', 'ฉะเชิงเทรา', 'ชลบุรี', 'ชัยนาท', 'ชัยภูมิ', 'ชุมพร', 'เชียงราย', 'เชียงใหม่', 'ตรัง', 'ตราด', 'ตาก', 'นครนายก', 'นครปฐม', 'นครพนม', 'นครราชสีมา', 'นครศรีธรรมราช', 'นครสวรรค์', 'นนทบุรี', 'นราธิวาส', 'น่าน', 'บึงกาฬ', 'บุรีรัมย์', 'ปทุมธานี', 'ประจวบคีรีขันธ์', 'ปราจีนบุรี', 'ปัตตานี', 'พระนครศรีอยุธยา', 'พะเยา', 'พังงา', 'พัทลุง', 'พิจิตร', 'พิษณุโลก', 'เพชรบุรี', 'เพชรบูรณ์', 'แพร่', 'ภูเก็ต', 'มหาสารคาม', 'มุกดาหาร', 'แม่ฮ่องสอน', 'ยโสธร', 'ยะลา', 'ร้อยเอ็ด', 'ระนอง', 'ระยอง', 'ราชบุรี', 'ลพบุรี', 'ลำปาง', 'ลำพูน', 'เลย', 'ศรีสะเกษ', 'สกลนคร', 'สงขลา', 'สตูล', 'สมุทรปราการ', 'สมุทรสงคราม', 'สมุทรสาคร', 'สระแก้ว', 'สระบุรี', 'สิงห์บุรี', 'สุโขทัย', 'สุพรรณบุรี', 'สุราษฎร์ธานี', 'สุรินทร์', 'หนองคาย', 'หนองบัวลำภู', 'อ่างทอง', 'อำนาจเจริญ', 'อุดรธานี', 'อุตรดิตถ์', 'อุทัยธานี', 'อุบลราชธานี', 'กรุงเทพมหานคร'];
 
 const activeFilters = ref({
   roles: ['makeup', 'photographer'],
@@ -482,7 +404,7 @@ onUnmounted(() => {
 /* Mobile */
 @media (max-width: 768px) {
   .provider-list {
-    grid-template-columns: repeat(2, 1fr); /* มือถือ 2 คอลัมน์ */
+    grid-template-columns: repeat(1, 1fr); /* มือถือ 1 คอลัมน์ */
   }
 }
 

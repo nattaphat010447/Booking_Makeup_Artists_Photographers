@@ -60,6 +60,7 @@ onMounted(async () => {
     otherUser.value = otherDoc.data();
   }
 
+  // ฟังชั่นนี้จะฟังการเปลี่ยนแปลงของข้อมูลห้องแชท เพื่ออัพเดตสถานะการอ่านและข้อมูลของห้องแชท
   unsubscribeMeta = onSnapshot(doc(db, 'chats', roomId), (docSnap) => {
     if (docSnap.exists()) {
       const data = docSnap.data();
