@@ -49,9 +49,9 @@ onIonViewWillEnter(() => {
           }
 
           roomsData.push({
-            id: document.id,
+            id: otherUserId,
             ...data,
-            otherUserName: otherUserData.full_name,
+            name: otherUserData.full_name,
             avatar: otherUserData.profile_image,
             hasUnread: data.unreadBy === user.uid 
           });
