@@ -1,71 +1,82 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Navbar from '../components/layout/Navbar.vue';
 import { auth, db } from '../config/firebase';
 import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { IonPage, IonContent, IonSpinner, IonList, IonItem, IonAvatar, IonLabel } from '@ionic/vue';
+
+import { IonPage, IonContent, IonList, IonItem, IonAvatar, IonLabel, IonBadge, IonSpinner, onIonViewWillEnter, onIonViewDidLeave } from '@ionic/vue';
 
 const router = useRouter();
 const chatRooms = ref<any[]>([]);
 const isLoading = ref(true);
-let unsubscribe: any = null;
 
-onMounted(() => {
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      fetchChatRooms(user.uid);
-    } else {
-      router.push('/login');
-    }
-  });
-});
-
-onUnmounted(() => {
-  if (unsubscribe) unsubscribe();
-});
-
-const fetchChatRooms = (myUid: string) => {
-  const q = query(
-    collection(db, 'chats'),
-    where('participants', 'array-contains', myUid)
-  );
-
-  // ฟังชั่นนี้จะดึงข้อมูลห้องแชททั้งหมดที่ผู้ใช้เป็นส่วนหนึ่งของมัน และสำหรับแต่ละห้องจะแยกหาผู้ใช้คนอื่น เพื่อดึงข้อมูลชื่อและรูปโปรไฟล์มาแสดงในหน้ารายการแชท
-  unsubscribe = onSnapshot(q, async (snapshot) => {
-    let roomsData: any[] = [];
-    
-    for (const document of snapshot.docs) {
-      const data = document.data();
-      const otherUid = data.participants.find((uid: string) => uid !== myUid);
-      
-      if (otherUid) {
-        const userSnap = await getDoc(doc(db, 'users', otherUid));
-        const userData = userSnap.exists() ? userSnap.data() : { full_name: 'Unknown User', profile_image: '' };
-
-        roomsData.push({
-          id: otherUid,
-          name: userData.full_name,
-          avatar: userData.profile_image || 'https://via.placeholder.com/50',
-          lastMessage: data.lastMessage || 'ส่งรูปภาพ/ใบเสนอราคา',
-          updatedAt: data.updatedAt?.toMillis() || 0,
-          unreadBy: data.unreadBy // เพื่อเช็คตัวหนาถ้ายังไม่อ่าน
-        });
-      }
-    }
-    
-    roomsData.sort((a, b) => b.updatedAt - a.updatedAt);
-    chatRooms.value = roomsData;
-    isLoading.value = false;
-  });
-};
-
+let authUnsubscribe: any = null;
+let chatUnsubscribe: any = null;
 
 const goToChat = (id: string) => {
   (document.activeElement as HTMLElement)?.blur();
   router.push(`/chat/${id}`);
 };
+
+onIonViewWillEnter(() => {
+  isLoading.value = true;
+  chatRooms.value = []; // เคลียร์แชทเก่าทิ้งทันทีป้องกันการแสดงผลค้าง
+
+  authUnsubscribe = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      if (chatUnsubscribe) chatUnsubscribe();
+
+      const q = query(
+        collection(db, 'chats'), 
+        where('participants', 'array-contains', user.uid)
+      );
+
+      chatUnsubscribe = onSnapshot(q, async (snapshot) => {
+        const roomsData: any[] = [];
+        
+        for (const document of snapshot.docs) {
+          const data = document.data();
+          const otherUserId = data.participants.find((id: string) => id !== user.uid);
+          
+          let otherUserData = { full_name: 'Unknown', profile_image: '' };
+          if (otherUserId) {
+            const userDoc = await getDoc(doc(db, 'users', otherUserId));
+            if (userDoc.exists()) {
+              otherUserData = userDoc.data() as any;
+            }
+          }
+
+          roomsData.push({
+            id: document.id,
+            ...data,
+            otherUserName: otherUserData.full_name,
+            avatar: otherUserData.profile_image,
+            hasUnread: data.unreadBy === user.uid 
+          });
+        }
+
+        chatRooms.value = roomsData.sort((a, b) => {
+          const timeA = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+          const timeB = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+          return timeB - timeA;
+        });
+        
+        isLoading.value = false;
+      });
+    } else {
+      chatRooms.value = [];
+      isLoading.value = false;
+      router.push('/login');
+    }
+  });
+});
+
+onIonViewDidLeave(() => {
+  if (authUnsubscribe) authUnsubscribe();
+  if (chatUnsubscribe) chatUnsubscribe();
+});
 </script>
 
 <template>
