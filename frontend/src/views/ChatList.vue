@@ -6,7 +6,7 @@ import { auth, db } from '../config/firebase';
 import { collection, query, where, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-import { IonPage, IonContent, IonList, IonItem, IonAvatar, IonLabel, IonBadge, IonSpinner, onIonViewWillEnter, onIonViewDidLeave } from '@ionic/vue';
+import { IonPage, IonContent, IonList, IonItem, IonAvatar, IonLabel, IonSpinner, onIonViewWillEnter, onIonViewDidLeave } from '@ionic/vue';
 
 const router = useRouter();
 const chatRooms = ref<any[]>([]);
